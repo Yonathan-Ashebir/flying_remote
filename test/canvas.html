@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Canvas Path with Fading Edges</title>
+  <style>
+    canvas { border: 1px solid black; }
+  </style>
+</head>
+<body>
+<canvas id="myCanvas" width="800" height="600"></canvas>
+
+<script>
+  // Get the canvas and context
+  const canvas = document.getElementById('myCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // Function to clear the canvas
+  function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  // Function to draw a path with fading edges
+  function drawPathWithFadingEdges(points) {
+    if (points.length < 2) return; // Need at least two points to draw
+
+    clearCanvas();
+
+    // Iterate through each segment of the points array
+    for (let i = 0; i < points.length - 1; i++) {
+      const startPoint = points[i];
+      const endPoint = points[i + 1];
+
+      // Calculate the angle of the line segment
+      const dx = endPoint[0] - startPoint[0];
+      const dy = endPoint[1] - startPoint[1];
+      const lineLength = Math.sqrt(dx * dx + dy * dy);
+
+      // Calculate gradient perpendicular to the line segment
+      const gradient = ctx.createLinearGradient(
+              startPoint[0] - dy / lineLength * 20, // Start of gradient perpendicular to line
+              startPoint[1] + dx / lineLength * 20,
+              startPoint[0] + dy / lineLength * 20, // End of gradient perpendicular to line
+              startPoint[1] - dx / lineLength * 20
+      );
+
+      // Set the gradient to fade at the edges
+      gradient.addColorStop(0, "rgba(0, 0, 0, 0)");    // Edge - transparent
+      gradient.addColorStop(0.5, "rgba(0, 0, 0, 1)");  // Center - solid color
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");    // Edge - transparent
+
+      // Set up the drawing properties
+      ctx.lineWidth = 20; // Broad stroke width
+      ctx.strokeStyle = gradient;
+
+      // Draw the line segment with gradient fading
+      ctx.beginPath();
+      ctx.moveTo(startPoint[0], startPoint[1]);
+      ctx.lineTo(endPoint[0], endPoint[1]);
+      ctx.stroke();
+    }
+  }
+
+  // Example points array: (feel free to change these)
+  const pointsArray = [
+    [100, 100], [150, 120], [200, 140], [250, 160],
+    [300, 180], [350, 200], [400, 220], [450, 240],
+    [500, 260], [550, 280], [600, 300]
+  ];
+
+  // Draw the path on canvas
+  drawPathWithFadingEdges(pointsArray);
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+export const maxBubbleSize = 300
