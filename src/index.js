@@ -4,12 +4,15 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import SolveForX from "./SolveForX";
+import {Test} from "./Test";
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
         {/*<App />*/}
         <SolveForX/>
+        {/*<Test/>*/}
+
     </React.StrictMode>
 );
 

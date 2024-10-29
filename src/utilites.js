@@ -1,3 +1,5 @@
+const {createRef} = require("react");
+
 function lowerBound(arr, value, lessThan = (a, b) => a < b) {
     let left = 0, right = arr.length;
     while (left < right) {
@@ -32,11 +34,20 @@ function equalRange(arr, value, lessThan = (a, b) => a < b, greaterThan = (a, b)
 
 module.exports = {
     wait: millis => new Promise(resolve => setTimeout(resolve, millis)),
-    generateEquation: (arg) => "" + arg,
+    generateEquation: (answer, difficulty) => ({
+        answer,
+        suspended: false,
+        releaseTime: 0,
+        question: ['x', '+', '2', '= ', answer + 2],
+        reference: createRef()
+    }),
     getNumberBounds: difficulty => [0, 100],
     getNextBubbleTimeBounds: difficulty => [700, 2000],
-    getBubbleDurationBounds: difficulty => [2000, 3000],
+    getBubbleDurationBounds: difficulty => [5000, 5000],
     getRandom: (lower, upper) => lower + Math.random() * (upper - lower),
     getBubbleSizeBounds: difficulty => [70, 300],
     lowerBound, upperBound, equalRange,
+    getEquationBubbleBounds: difficulty => [0, 0.2],
+    getReleaseTimeBounds: difficulty => [1000, 2000],
+    getBonus: (index, difficult) => 5
 }

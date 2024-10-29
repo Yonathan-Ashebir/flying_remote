@@ -12,6 +12,7 @@
 .bubble .bubble-inner {
     border-radius: 50%;
     display: block;
+    user-select: none;
 }
 
 .bubble .bubble-inner:before, .bubble .bubble-inner:after,

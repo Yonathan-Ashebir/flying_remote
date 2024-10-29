@@ -2,12 +2,11 @@ import {TextBubble} from "./TextBubble";
 import {useEffect, useRef, useState} from "react";
 import {maxBubbleSize} from "../data/contants";
 import './trail.css'
-import './bubble_board.css'
 import styled from "@emotion/styled";
 import {keyframes} from "@emotion/react";
 
-export const BubblesBoard = ({bubbles, popBubble}) => {
-
+export const BubblesBoard = props => {
+    const {bubbles, popBubble} = props
     const bubblesRef = useRef(bubbles)
     bubblesRef.current = bubbles
     const [boardDimension, setBoardDimension] = useState(null)
@@ -56,6 +55,7 @@ export const BubblesBoard = ({bubbles, popBubble}) => {
                 }
             }
 
+
             const bounds = trailContainer.current.getBoundingClientRect()
             trailContainer.current.onmousemove = ev => {
                 const mouseX = ev.clientX - bounds.left;
@@ -74,27 +74,28 @@ export const BubblesBoard = ({bubbles, popBubble}) => {
     }, [boardDimension, popBubble]);
 
     return <div style={{
-        width: '100%',
-        height: '100%',
         background: '#08c linear-gradient(#33bbff, #08c, #004466)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center', ...props.style
     }}>
         <div style={{position: 'relative', overflow: 'hidden'}}>
-            <img style={{minWidth: '80vw', minHeight: '60vw'}} onLoad={ev => {
+            <img style={{minWidth: '80vw', minHeight: '90vh'}} onLoad={ev => {
                 const bounds = ev.currentTarget.getBoundingClientRect();
                 setBoardDimension({width: bounds.width, height: bounds.height});
             }} ref={el => {
                 if (el === null || boardDimension != null) return;
-                const bounds = el.getBoundingClientRect(); //todo: remove
-                setBoardDimension({width: bounds.width, height: bounds.height});
+                setTimeout(() => {
+                    const bounds = el.getBoundingClientRect(); //todo: remove
+                    setBoardDimension({width: bounds.width, height: bounds.height});
+                }, 100)
             }} alt={"Video stream"}/>
             <div style={{width: `calc(100% - ${maxBubbleSize}px)`, height: '100%', position: 'absolute', top: '0'}}>
                 {bubbles.map(b =>
                     <FloatingBubble key={b.value} style={{left: b.auxiliary * 100 + '%'}}
-                                    className={b.popped ? 'popped' : ''} size={b.size + 'px'} duration={b.duration} refFix={b.reference}>
+                                    className={b.popped ? 'popped' : ''} size={b.size + 'px'} duration={b.duration}
+                                    refFix={b.reference}>
                         {b.value}
                     </FloatingBubble>
                 )}
