@@ -1,18 +1,24 @@
 import {TextBubble} from "./TextBubble";
-import {useEffect, useRef, useState} from "react";
-import {maxBubbleSize} from "../data/contants";
+import {useContext, useEffect, useRef, useState} from "react";
+import {maxBubbleSize, Status} from "../data/contants";
 import './trail.css'
 import styled from "@emotion/styled";
 import {keyframes} from "@emotion/react";
+import {Timebar} from "./Timebar";
+import {GameContext} from "../data/GameContext";
+import {Button, Card, IconButton, Stack} from "@mui/material";
+import {PlayArrow, PlayCircleFilled, ReplayCircleFilled} from "@mui/icons-material";
 
 export const BubblesBoard = props => {
-    const {bubbles, popBubble} = props
+    const {bubbles, popBubble, controlState, handTrackerRef} = props
     const bubblesRef = useRef(bubbles)
     bubblesRef.current = bubbles
     const [boardDimension, setBoardDimension] = useState(null)
     const trailContainer = useRef()
     const pen = useRef()
     const pen2 = useRef()
+    const gameContext = useContext(GameContext)
+
 
     useEffect(() => {
         window.boardDimension = boardDimension
@@ -32,7 +38,7 @@ export const BubblesBoard = props => {
                         for (const bubble of bubblesRef.current) {
                             const cx = bubble.auxiliary * (boardDimension.width - maxBubbleSize) + bubble.size / 2
                             const cy = boardDimension.height - (now - bubble.createTime) * (boardDimension.height + maxBubbleSize * 1.5) / bubble.duration + bubble.size / 2
-                            if (Math.sqrt((cx - x) ** 2 + (cy - y) ** 2) < bubble.size) popBubble(bubble)
+                            if ((cx - x) ** 2 + (cy - y) ** 2 < bubble.size ** 2 / 2) popBubble(bubble)
                         }
 
                         pen.current.style.top = `${y}px`
@@ -122,8 +128,39 @@ export const BubblesBoard = props => {
                 position: 'absolute',
                 transform: 'translate(-50%, -50%)',
                 borderRadius: '50%',
-                top: '0'
+                opacity: 0.5,
+                top: '0',
+                display: "none"
             }}></div>
+            <Timebar style={{position: 'absolute', top: '50px', left: '50%', transform: 'translateX(-50%)'}}/>
+            {gameContext.status !== Status.PLAYING && <Stack justifyContent={'center'} alignItems={'center'}>
+                <Stack style={{
+                    visibility: gameContext.status === Status.PLAYING ? 'hidden' : 'visible',
+                    opacity: gameContext.status === Status.PLAYING ? 0 : 1,
+                    transition: 'opacity 0.5s',
+                    background: '#00000055',
+                    backdropFilter: 'blur(10px)',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0
+                }} alignItems={'center'} justifyContent={'center'}>
+                    <Card>
+                        {(gameContext.status === Status.PAUSED &&
+                                <Button onClick={props.unpause}><PlayArrow color={'primary'}
+                                                                           fontSize={'large'}/></Button>) ||
+                            (gameContext.gameStartTime === -1 ?
+                                    <Button onClick={props.play}><PlayCircleFilled
+                                        fontSize={'large'} color={'primary'}/>&nbsp;Start</Button> :
+                                    <Button onClick={props.play}><ReplayCircleFilled
+                                        fontSize={'large'} color={'primary'}/>&nbsp;Restart</Button>
+                            )
+                        }
+                    </Card>
+
+                </Stack>
+            </Stack>}
         </div>
     </div>
 }

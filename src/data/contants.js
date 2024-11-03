@@ -10,3 +10,9 @@ export const Status = {
     PAUSED: 1,
     STOPPED: 2
 }
+
+export const ControlState = {
+    MOUSE: 0,
+    LOADING_HAND: 1,
+    HAND: 2
+}
