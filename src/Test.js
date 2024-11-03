@@ -1,5 +1,5 @@
 import {SwitchTransition, Transition} from "react-transition-group";
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {CSSFadeTransition} from "./components/transitions/CSSFadeTransition";
 import {Button, Stack} from "@mui/material";
 
@@ -31,8 +31,19 @@ const TestFadeSwitch = () => {
     </Stack>
 }
 
+const TestWebcamToVideo = () => {
+    const ref = useRef(null);
+    useEffect(() => {
+        setTimeout(async () => {
+            ref.current.srcObject = await navigator.mediaDevices.getUserMedia({video: true})
+
+        }, 50)
+    }, [true]);
+    return <video ref={ref}></video>
+}
+
 export const Test = () => {
     return <Stack style={{display: 'flex', alignItems: 'start'}}>
-        <TestFadeSwitch/>
+        <TestWebcamToVideo/>
     </Stack>
 }

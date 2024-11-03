@@ -3,17 +3,17 @@ import {forwardRef, useContext} from "react";
 import './equation-bar.css'
 import {Card, CardContent, FormControlLabel, IconButton, Slider, Stack, Switch, Typography} from "@mui/material";
 import {CSSFadeTransition} from "./transitions/CSSFadeTransition";
-import {getBonus} from "../utilites";
+import {getBonus, notify} from "../utilites";
 import {GameContext} from "../data/GameContext";
 import {StopCircle, WavingHand} from '@mui/icons-material'
 import {ControlState, Difficulty, Status} from "../data/contants";
 import {CSSSlideUpCollapseTransition} from "./transitions/CSSSlideUpCollapseTransition";
-import {FilesetResolver, LanguageDetector as HandLandmarker} from "@mediapipe/tasks-text";
-
+// import {FilesetResolver, LanguageDetector as HandLandmarker} from "@mediapipe/tasks-text";
+import {HandLandmarker, FilesetResolver} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
 export const EquationsBar = props => {
     const gameContext = useContext(GameContext);
-    const {controlState, handTrackerRef, setControlState} = props.controlState
+    const {controlState, handTrackerRef, setControlState} = props
 
     return <Stack style={{background: '#08c linear-gradient(#33bbff, #08c, #004466)', minWidth: '16em'}} spacing={2}
                   padding={2}>
@@ -92,28 +92,28 @@ export const EquationsBar = props => {
                     <Switch checked={controlState !== ControlState.MOUSE} onChange={() => {
                         if (controlState === ControlState.MOUSE) {
                             setControlState(ControlState.LOADING_HAND)
-                            if (handTrackerRef.current === null) {
-                                handTrackerRef.current = 1; // locking
+                            if (!handTrackerRef.current.locked) {
+                                handTrackerRef.current.locked = true; // locking
                                 (async () => {
                                     const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
-                                    console.log("WASM:", vision)
-                                    handTrackerRef.current = await HandLandmarker.createFromOptions(vision, {
+                                    if (!handTrackerRef.current.handMarker) handTrackerRef.current.handMarker = await HandLandmarker.createFromOptions(vision, {
                                         baseOptions: {
-                                            modelAssetPath: `./models/hand_landmarker.task`,
+                                            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
                                             delegate: "GPU"
                                         },
                                         runningMode: 'VIDEO',
-                                        numHands: 1,
-
-                                    });
-                                }).then(() => setControlState(ControlState.HAND), () => {
-                                    handTrackerRef.current = null; // unlocking on failure
+                                        numHands: 1
+                                    })
+                                    handTrackerRef.current.videoSource = await navigator.mediaDevices.getUserMedia({video: true})
+                                    handTrackerRef.current.locked = false
+                                })().then(() => setControlState(ControlState.HAND), (e) => {
+                                    handTrackerRef.current.locked = false; // unlocking on failure
                                     setControlState(ControlState.MOUSE)
+                                    console.error(e)
+                                    notify(e.toString())
                                 })
                             }
-                        } else {
-
-                        }
+                        } else if(controlState === ControlState.HAND) setControlState(ControlState.MOUSE)
                     }} disabled={controlState === ControlState.LOADING_HAND}/>
                 }
                 label={<WavingHand style={{paddingTop: '0.2em'}}/>}

@@ -6,7 +6,7 @@ import {constrainBetween} from "../utilites";
 import {TransitionGroup} from "react-transition-group";
 import {CSSSlideUpTransition} from "./transitions/CSSSlideUpTransition";
 
-export const Timebar = ({...rest}) => {
+export const Timebar = ({style, ...rest}) => {
     const gameContext = useContext(GameContext);
     const [remaining, setRemaining] = useState(100);
 
@@ -19,10 +19,10 @@ export const Timebar = ({...rest}) => {
             }
         }, [gameContext]
     )
-    return <CSSSlideUpTransition {...rest}
+    return <CSSSlideUpTransition {...rest} style={{minWidth: '80%', ...style}}
                                  in={(gameContext.status === Status.PLAYING || gameContext.status === Status.PAUSED) && gameContext.gameStartTime !== -1 && gameContext.gameEndTime !== -1}>
         <Paper style={{padding: '10px', borderRadius: '15px'}}>
-            <LinearProgress variant={'determinate'} style={{minWidth: '50vw', height: '20px', borderRadius: '10px'}}
+            <LinearProgress variant={'determinate'} style={{height: '20px', borderRadius: '10px'}}
                             value={remaining}/>
         </Paper>
     </CSSSlideUpTransition>

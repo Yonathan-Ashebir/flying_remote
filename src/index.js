@@ -11,7 +11,7 @@ root.render(
     <React.StrictMode>
         {/*<App />*/}
         <SolveForX/>
-        {/*<Test/>*/}
+       {/* <Test/>*/}
 
     </React.StrictMode>
 );

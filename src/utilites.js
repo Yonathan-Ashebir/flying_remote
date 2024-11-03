@@ -33,9 +33,25 @@ function equalRange(arr, value, lessThan = (a, b) => a < b, greaterThan = (a, b)
     return [lower, upper];
 }
 
+const constrainBetween = (val, lower, upper) => Math.max(Math.min(val, upper), lower)
+
+const selectScale = dimens => {
+    let maximumLowerScale = 0;
+    let minimumUpperScale = Number.MAX_VALUE;
+    for (const dimen of dimens) {
+        const {value, lower = 0, upper = Number.MAX_VALUE} = dimen
+        const lowerScale = lower / value;
+        const upperScale = upper / value;
+        maximumLowerScale = Math.max(maximumLowerScale, lowerScale);
+        minimumUpperScale = Math.min(minimumUpperScale, upperScale);
+    }
+    return {maximumLowerScale, minimumUpperScale}
+}
+
 module.exports = {
     wait: millis => new Promise(resolve => setTimeout(resolve, millis)),
     waitForNextAnimationFrame: () => new Promise(resolve => requestAnimationFrame(resolve)),
+    constrainBetween,
     generateEquation: (answer, difficulty) => ({
         answer,
         suspended: false,
@@ -55,5 +71,11 @@ module.exports = {
     getBonus: (index, difficult) => (3 - index) * 5,
     getDeduction: (difficulty) => 10,
     getGameDuration: () => 60000,
-    constrainBetween: (val, lower, upper) => Math.max(Math.min(val, upper), lower)
+    notify: (msg, type) => window.alert(msg),
+    selectScale,
+    selectBestScale: dimens => {
+        const {maximumLowerScale, minimumUpperScale} = selectScale(dimens);
+        if (minimumUpperScale > maximumLowerScale) return constrainBetween(1, maximumLowerScale, minimumUpperScale)
+        return maximumLowerScale
+    }
 }

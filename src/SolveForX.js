@@ -16,6 +16,7 @@ import {EquationsBar} from "./components/EquationsBar";
 import {ControlState, Difficulty, maxEquationsCount, Status} from "./data/contants";
 import {GameContext} from "./data/GameContext";
 import {Timebar} from "./components/Timebar";
+import {Stack} from "@mui/material";
 
 
 const SolveForX = props => {
@@ -33,7 +34,7 @@ const SolveForX = props => {
         , [])
     const [gameStartTime, setGameStartTime] = useState(-1);
     const [gameEndTime, setGameEndTime] = useState(-1);
-    const handTrackerRef = useRef(null)
+    const handTrackerRef = useRef({locked: false, handMarker: null, videoStream: null});
     const [controlState, setControlState] = useState(ControlState.MOUSE)
     const gameContext = useMemo(() => ({
         difficulty,
@@ -102,7 +103,7 @@ const SolveForX = props => {
                                     setStatus(Status.PAUSED)
                                     const alreadySpent = now - myGameStartTime;
                                     let lastEvent;
-                                    while (!events.current.length || !['continue', 'stop'].includes((lastEvent = events.current.pop().type, console.log('lastEvent:', lastEvent), lastEvent))) await wait(20);
+                                    while (!events.current.length || !['continue', 'stop'].includes((lastEvent = events.current.pop().type))) await wait(20);
                                     if (lastEvent === 'stop') break myLoop
                                     now = Date.now();
                                     myGameStartTime = now - alreadySpent;
@@ -193,15 +194,18 @@ const SolveForX = props => {
 
 
     return <GameContext.Provider value={gameContext}>
-        <div style={{display: "flex", flexFlow: 'row', justifyContent: 'center'}}>
-            <BubblesBoard bubbles={bubbles}
-                          popBubble={popBubble} style={{}} play={play} unpause={unpause}
-                          controlState={controlState}
-                          handTrackerRef={handTrackerRef}/>
-            <EquationsBar score={score} equations={equations} stop={stop} pause={pause} setDifficulty={setDifficulty}
-                          controlState={controlState} setControlState={setControlState}
-                          handTrackerRef={handTrackerRef}/>
-        </div>
+        <Stack justifyContent={'center'} alignItems={'center'} width={'100%'} height={'100%'}>
+            <Stack direction={'row'} justifyContent={'center'} style={{borderRadius: '30px', overflow: "hidden"}}>
+                <BubblesBoard bubbles={bubbles}
+                              popBubble={popBubble} style={{}} play={play} unpause={unpause}
+                              controlState={controlState}
+                              handTrackerRef={handTrackerRef}/>
+                <EquationsBar score={score} equations={equations} stop={stop} pause={pause}
+                              setDifficulty={setDifficulty}
+                              controlState={controlState} setControlState={setControlState}
+                              handTrackerRef={handTrackerRef}/>
+            </Stack>
+        </Stack>
     </GameContext.Provider>
 }
 
