@@ -48,22 +48,29 @@ const selectScale = dimens => {
     return {maximumLowerScale, minimumUpperScale}
 }
 
+const getNumberBounds = difficulty => difficulty === Difficulty.EASY ? [0, 10] : difficulty === Difficulty.MEDIUM ? [0, 20] : [0, 50]
+
+const getRandom = (lower, upper) => lower + Math.random() * (upper - lower)
+
 module.exports = {
     wait: millis => new Promise(resolve => setTimeout(resolve, millis)),
     waitForNextAnimationFrame: () => new Promise(resolve => requestAnimationFrame(resolve)),
     constrainBetween,
-    generateEquation: (answer, difficulty) => ({
-        answer,
-        suspended: false,
-        releaseTime: 0,
-        question: ['x', '+', '2', '= ', answer + 2],
-        reference: createRef()
-    }),
-    getNumberBounds: difficulty => difficulty === Difficulty.EASY ? [0, 10] : difficulty === Difficulty.MEDIUM ? [0, 20] : [0, 50],
+    generateEquation: (answer, difficulty) => {
+        const addened = Math.floor(getRandom(...getNumberBounds(difficulty)))
+        return {
+            answer,
+            suspended: false,
+            releaseTime: 0,
+            question: ['x', '+', addened, '= ', answer + addened],
+            reference: createRef()
+        }
+    },
+    getNumberBounds,
     getNextBubbleTimeBounds: difficulty => difficulty === Difficulty.EASY ? [400, 1000] : difficulty === Difficulty.MEDIUM ? [157.14, 557.14] : [122.2, 322.2],
     getBubbleDurationBounds: difficulty => difficulty === Difficulty.EASY ? [3000, 4000] : difficulty === Difficulty.MEDIUM ? [2000, 3000] : [1500, 2500],
     getShouldHaveEquationProbability: difficulty => difficulty === Difficulty.EASY ? 3 / 5 : difficulty === Difficulty.MEDIUM ? 3 / 7 : 1 / 3,
-    getRandom: (lower, upper) => lower + Math.random() * (upper - lower),
+    getRandom,
     getBubbleSizeBounds: difficulty => [70, 300],
     lowerBound, upperBound, equalRange,
     getEquationBubbleBounds: difficulty => [0, 0.2],

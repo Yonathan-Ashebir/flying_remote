@@ -195,7 +195,7 @@ const SolveForX = props => {
 
     return <GameContext.Provider value={gameContext}>
         <Stack justifyContent={'center'} alignItems={'center'} width={'100%'} height={'100%'}>
-            <Stack direction={'row'} justifyContent={'center'} style={{borderRadius: '30px', overflow: "hidden"}}>
+            <Stack direction={'row'} justifyContent={'center'} style={{borderRadius: '10px', overflow: "hidden"}}>
                 <BubblesBoard bubbles={bubbles}
                               popBubble={popBubble} style={{}} play={play} unpause={unpause}
                               controlState={controlState}
