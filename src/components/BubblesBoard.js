@@ -109,7 +109,7 @@ export const BubblesBoard = props => {
                         if (penDown) dispatch({type: 'pen-up'}, planeDimen)
                         return
                     }
-                    const middleFinger = results.landmarks[0][12]
+                    const middleFinger = results.landmarks[0][8]
                     const x = (initialVideoWidth - middleFinger.x * initialVideoWidth) * scale
                     const y = middleFinger.y * initialVideoHeight * scale
                     if (!penDown) dispatch({type: 'pen-down', x, y}, planeDimen)
