@@ -76,7 +76,7 @@ module.exports = {
     getEquationBubbleBounds: difficulty => [0, 0.2],
     getReleaseTimeBounds: difficulty => difficulty === Difficulty.EASY ? [1000, 3000] : difficulty === Difficulty.MEDIUM ? [1500, 3000] : [2000, 3000],
     getBonus: (index, difficult) => (3 - index) * 5,
-    getDeduction: (difficulty) => 10,
+    getDeduction: (difficulty) => 5,
     getGameDuration: () => 60000,
     notify: (msg, type) => window.alert(msg),
     selectScale,
