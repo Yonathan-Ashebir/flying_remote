@@ -67,8 +67,8 @@ module.exports = {
         }
     },
     getNumberBounds,
-    getNextBubbleTimeBounds: difficulty => difficulty === Difficulty.EASY ? [400, 500] : difficulty === Difficulty.MEDIUM ? [157.14, 557.14] : [122.2, 322.2],
-    getBubbleDurationBounds: difficulty => difficulty === Difficulty.EASY ? [5000, 7000] : difficulty === Difficulty.MEDIUM ? [2000, 3000] : [1500, 2500],
+    getNextBubbleTimeBounds: difficulty => difficulty === Difficulty.EASY ? [400, 1000] : difficulty === Difficulty.MEDIUM ? [157.14, 557.14] : [122.2, 322.2],
+    getBubbleDurationBounds: difficulty => difficulty === Difficulty.EASY ? [4000, 4500] : difficulty === Difficulty.MEDIUM ? [2000, 3000] : [1500, 2500],
     getShouldHaveEquationProbability: difficulty => difficulty === Difficulty.EASY ? 3 / 5 : difficulty === Difficulty.MEDIUM ? 3 / 7 : 1 / 3,
     getRandom,
     getBubbleSizeBounds: difficulty => [70, 300],
