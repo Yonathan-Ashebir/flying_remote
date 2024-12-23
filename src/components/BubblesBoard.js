@@ -72,7 +72,8 @@ export const BubblesBoard = props => {
         }
         if (useHand) {
             const {handMarker, videoSource} = handTrackerRef.current
-            videoElement.current.onloadedmetadata = () => {
+
+            const measure = () => {
                 const {videoHeight: initialVideoHeight, videoWidth: initialVideoWidth} = videoElement.current
                 const trim = TRIM_RATIO * Math.min(initialVideoWidth, initialVideoHeight)
                 const videoWidth = initialVideoWidth - trim
@@ -94,7 +95,13 @@ export const BubblesBoard = props => {
                     width: `${adjustedWidth}px`,
                     height: `${adjustedHeight}px`
                 })
-                const planeDimen = {width: adjustedWidth, height: adjustedHeight}
+                return  {width: adjustedWidth, height: adjustedHeight, initialVideoWidth, initialVideoHeight, scale}
+            }
+            const measurements = {current: measure()}
+            const onResize = () => {measurements.current = measure()}
+
+            videoElement.current.onloadedmetadata = () => {
+                window.addEventListener('resize', onResize)
                 const trackHand = (data) => {
                     const {lastVideoTime, penDown = false} = data
                     if (myTicket !== handlerTicket.current) return
@@ -106,46 +113,47 @@ export const BubblesBoard = props => {
                     let results = handMarker.detectForVideo(videoElement.current, startTimeMs);
                     if (!results.landmarks.length) {
                         data.penDown = false
-                        if (penDown) dispatch({type: 'pen-up'}, planeDimen)
+                        if (penDown) dispatch({type: 'pen-up'}, measurements.current)
                         return
                     }
                     const middleFinger = results.landmarks[0][8]
-                    const x = (initialVideoWidth - middleFinger.x * initialVideoWidth) * scale
-                    const y = middleFinger.y * initialVideoHeight * scale
-                    if (!penDown) dispatch({type: 'pen-down', x, y}, planeDimen)
+                    const x = (measurements.current.initialVideoWidth - middleFinger.x * measurements.current.initialVideoWidth) * measurements.current.scale
+                    const y = middleFinger.y * measurements.current.initialVideoHeight * measurements.current.scale
+                    if (!penDown) dispatch({type: 'pen-down', x, y}, measurements.current)
                     data.penDown = true
                     dispatch({
                         type: 'pen-move',
                         x, y
-                    }, planeDimen)
+                    }, measurements.current)
                 }
                 trackHand({lastVideoTime: -1})
             }
             videoElement.current.srcObject = videoSource
             return () => {
                 for (const child of trailer.children) child.remove()
+                window.removeEventListener('resize', onResize)
                 dispatch({type: 'pen-up'})
                 videoSource.getTracks().forEach(t => t.stop())
             }
         } else {
             setBoardDimensions(DEFAULT_BOARD_DIMENS)
-            const planeDimen = {
-                width: window.innerWidth * MAX_BOARD_WIDTH_RATIO,
-                height: window.innerHeight * MAX_BOARD_HEIGHT_RATIO
-            }
+
             const bounds = {
                 current: trailer.getBoundingClientRect(),
                 updateBound: true,
-                updateStopTime: Date.now() + 1000000000
+                updateStopTime: Date.now() + 3000
             };
 
             dispatch({
                 type: 'pen-down',
                 x: -100,
                 y: -100
-            }, planeDimen)
+            }, {
+                width: window.innerWidth * MAX_BOARD_WIDTH_RATIO,
+                height: window.innerHeight * MAX_BOARD_HEIGHT_RATIO
+            })
             trailer.onmousemove = ev => {
-                if(bounds.updateBound && bounds.updateStopTime > Date.now()){
+                if (bounds.updateBound && bounds.updateStopTime > Date.now()) {
                     bounds.current = trailer.getBoundingClientRect() //todo: can do better?
                     bounds.updateBound = bounds.updateStopTime > Date.now()
                 }
@@ -155,14 +163,29 @@ export const BubblesBoard = props => {
                     type: 'pen-move',
                     x: mouseX,
                     y: mouseY,
-                }, planeDimen)
+                }, {
+                    width: window.innerWidth * MAX_BOARD_WIDTH_RATIO,
+                    height: window.innerHeight * MAX_BOARD_HEIGHT_RATIO
+                })
             }
+
+            const onResize = () => {
+                bounds.current = trailer.getBoundingClientRect()
+                bounds.updateBound = true
+                bounds.updateStopTime = Date.now() + 3000
+            }
+
+            window.addEventListener('resize', onResize)
 
             return () => {
                 for (const child of trailer.children) child.remove()
                 dispatch({
                     type: 'pen-up'
-                }, planeDimen)
+                }, {
+                    width: window.innerWidth * MAX_BOARD_WIDTH_RATIO,
+                    height: window.innerHeight * MAX_BOARD_HEIGHT_RATIO
+                })
+                window.removeEventListener('resize', onResize)
                 trailer.onmousemove = null
             }
         }
