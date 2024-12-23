@@ -4,18 +4,20 @@ import {
     generateEquation,
     getBonus,
     getBubbleDurationBounds,
-    getBubbleSizeBounds, getDeduction,
-    getEquationBubbleBounds, getGameDuration,
+    getBubbleSizeBounds,
+    getDeduction,
+    getEquationBubbleBounds,
+    getGameDuration,
     getNextBubbleTimeBounds,
     getNumberBounds,
     getRandom,
-    getReleaseTimeBounds, getShouldHaveEquationProbability,
+    getReleaseTimeBounds,
+    getShouldHaveEquationProbability,
     wait
 } from "./utilites";
 import {EquationsBar} from "./components/EquationsBar";
 import {ControlState, Difficulty, maxEquationsCount, Status} from "./data/contants";
 import {GameContext} from "./data/GameContext";
-import {Timebar} from "./components/Timebar";
 import {Stack} from "@mui/material";
 
 

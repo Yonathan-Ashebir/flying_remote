@@ -41,10 +41,9 @@ export const EquationsBar = props => {
                     <Stack style={{transition: 'height 1s'}}>
                         <TransitionGroup component={null}>
                             {props.equations.map((equation, index) =>
-                                <CSSTransition key={equation.answer} timeout={600} nodeRef={equation.reference}
-                                               classNames='equation' appear={true}>
+                                <CSSSlideUpCollapseTransition>
                                     <Equation eq={equation} ref={equation.reference} index={index}/>
-                                </CSSTransition>)
+                                </CSSSlideUpCollapseTransition>)
                             }
                         </TransitionGroup>
                     </Stack>
@@ -52,7 +51,7 @@ export const EquationsBar = props => {
             </CardContent>
         </Card>
         <span style={{flexGrow: '1'}}></span>
-        <TransitionGroup component={null}>
+        <TransitionGroup component={'div'}>
             {gameContext.status === Status.STOPPED &&
                 <CSSSlideUpCollapseTransition><Card>
                     <CardContent><Stack>
@@ -113,7 +112,7 @@ export const EquationsBar = props => {
                                     notify(e.toString())
                                 })
                             }
-                        } else if(controlState === ControlState.HAND) setControlState(ControlState.MOUSE)
+                        } else if (controlState === ControlState.HAND) setControlState(ControlState.MOUSE)
                     }} disabled={controlState === ControlState.LOADING_HAND}/>
                 }
                 label={<WavingHand style={{paddingTop: '0.2em'}}/>}

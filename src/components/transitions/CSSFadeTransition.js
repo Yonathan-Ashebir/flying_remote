@@ -1,12 +1,12 @@
-import {CSSTransition, SwitchTransition} from "react-transition-group";
+import {CSSTransition} from "react-transition-group";
 import './css-fade-transition.css'
 import {Stack} from "@mui/material";
 import {useRef} from "react";
 
-export const CSSFadeTransition = ({children, keyForChild, appear, timeout = 300, style = {}, 'in': isIn, ...rest}) => {
+export const CSSFadeTransition = ({children, appear, timeout = 300, style = {}, 'in': isIn, ...rest}) => {
     const ref = useRef();
-    return <CSSTransition {...rest} timeout={timeout} style={{'--transition-time': `${timeout}ms`}} classNames="fade"
-                          appear={appear} in={isIn} nodeRef={ref}>
+    return <CSSTransition timeout={timeout} style={{'--transition-time': `${timeout}ms`, ...style}} classNames="fade"
+                          appear={appear} in={isIn} {...rest} nodeRef={ref}>
         <Stack ref={ref}>{children}</Stack>
     </CSSTransition>
 }

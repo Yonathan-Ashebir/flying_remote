@@ -1,21 +1,22 @@
-.slide-up-enter {
+.slide-up-collapse-enter {
     opacity: 0;
-    transform: scale(0.8) translateY(10px);
+    transform: scale(0.8) translateY(50%);
 }
 
-.slide-up-enter-active, .slide-up-enter-done {
+.slide-up-collapse-enter-active, .slide-up-collapse-enter-done {
     transform: scale(1) translateY(0);
     opacity: 1;
-    transition: opacity 0.5s, transform 0.5s !important;
+    transition: opacity var(--transition-time), transform var(--transition-time) !important;
 }
 
-.slide-up-exit {
-    transform: scale(1) translateY(0);
+.slide-up-collapse-exit {
+    overflow: hidden;
+    max-height: 100px;
     opacity: 1;
 }
 
-.slide-up-exit-active, .slide-up-exit-done {
+.slide-up-collapse-exit-active, .slide-up-collapse-exit-done {
+    transition: opacity var(--transition-time), max-height var(--transition-time) !important;
     opacity: 0;
-    transform: scale(0.8) translateY(10px);
-    transition: opacity 0.5s, transform 0.5s !important;
+    max-height: 0
 }

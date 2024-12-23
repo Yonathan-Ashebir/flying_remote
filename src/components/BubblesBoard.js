@@ -11,7 +11,7 @@ import {
 import './trail.css'
 import styled from "@emotion/styled";
 import {keyframes} from "@emotion/react";
-import {Timebar} from "./Timebar";
+import {TimeBar} from "./TimeBar";
 import {GameContext} from "../data/GameContext";
 import {Button, Card, IconButton, Stack} from "@mui/material";
 import {PlayArrow, PlayCircleFilled, ReplayCircleFilled} from "@mui/icons-material";
@@ -220,7 +220,7 @@ export const BubblesBoard = props => {
             top: '0',
             display: "none"
         }}></div>
-        <Timebar style={{position: 'absolute', top: '50px', left: '50%', transform: 'translateX(-50%)'}}/>
+        <TimeBar style={{position: 'absolute', top: '50px', left: '50%', transform: 'translateX(-50%)'}}/>
         {gameContext.status !== Status.PLAYING && <Stack justifyContent={'center'} alignItems={'center'}>
             <Stack style={{
                 visibility: gameContext.status === Status.PLAYING ? 'hidden' : 'visible',

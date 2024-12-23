@@ -3,9 +3,10 @@ import './css-slide-up-transition.css'
 import {Stack} from "@mui/material";
 import {useRef} from "react";
 
-export const CSSSlideUpTransition = ({children, keyForChild, appear, 'in': isIn, ...rest}) => {
+export const CSSSlideUpTransition = ({children, appear, timeout = 500, style = {}, 'in': isIn, ...rest}) => {
     const ref = useRef();
-    return <CSSTransition {...rest} timeout={30000} classNames="slide-up" appear={appear} in={isIn} nodeRef={ref}>
+    return <CSSTransition appear={appear} in={isIn} timeout={timeout}
+                          style={{'--transition-time': `${timeout}ms`, ...style}} {...rest} classNames="slide-up" nodeRef={ref}>
         <Stack ref={ref}>{children}</Stack>
     </CSSTransition>
 }
