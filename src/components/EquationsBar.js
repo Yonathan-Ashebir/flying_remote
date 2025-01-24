@@ -8,8 +8,7 @@ import {GameContext} from "../data/GameContext";
 import {StopCircle, WavingHand} from '@mui/icons-material'
 import {ControlState, Difficulty, Status} from "../data/contants";
 import {CSSSlideUpCollapseTransition} from "./transitions/CSSSlideUpCollapseTransition";
-// import {FilesetResolver, LanguageDetector as HandLandmarker} from "@mediapipe/tasks-text";
-import {HandLandmarker, FilesetResolver} from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
+import {FilesetResolver, HandLandmarker} from "@mediapipe/tasks-vision";
 
 export const EquationsBar = props => {
     const gameContext = useContext(GameContext);
@@ -41,7 +40,7 @@ export const EquationsBar = props => {
                     <Stack style={{transition: 'height 1s'}}>
                         <TransitionGroup component={null}>
                             {props.equations.map((equation, index) =>
-                                <CSSSlideUpCollapseTransition>
+                                <CSSSlideUpCollapseTransition key={index}>
                                     <Equation eq={equation} ref={equation.reference} index={index}/>
                                 </CSSSlideUpCollapseTransition>)
                             }
@@ -94,10 +93,10 @@ export const EquationsBar = props => {
                             if (!handTrackerRef.current.locked) {
                                 handTrackerRef.current.locked = true; // locking
                                 (async () => {
-                                    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm");
+                                    const vision = await FilesetResolver.forVisionTasks("/wasm" );
                                     if (!handTrackerRef.current.handMarker) handTrackerRef.current.handMarker = await HandLandmarker.createFromOptions(vision, {
                                         baseOptions: {
-                                            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+                                            modelAssetPath: `/models/hand_landmarker.task`,
                                             delegate: "GPU"
                                         },
                                         runningMode: 'VIDEO',
