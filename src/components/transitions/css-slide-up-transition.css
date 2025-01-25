@@ -1,0 +1,21 @@
+.slide-up-enter {
+    opacity: 0;
+    transform: scale(0.8) translateY(50%);
+}
+
+.slide-up-enter-active, .slide-up-enter-done {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    transition: opacity var(--transition-time), transform var(--transition-time) !important;
+}
+
+.slide-up-exit {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.slide-up-exit-active, .slide-up-exit-done {
+    opacity: 0;
+    transform: scale(0.8) translateY(50%);
+    transition: opacity var(--transition-time), transform var(--transition-time) !important;
+}

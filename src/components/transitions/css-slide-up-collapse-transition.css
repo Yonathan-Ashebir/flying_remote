@@ -1,0 +1,22 @@
+.slide-up-collapse-enter {
+    opacity: 0;
+    transform: scale(0.8) translateY(50%);
+}
+
+.slide-up-collapse-enter-active, .slide-up-collapse-enter-done {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    transition: opacity var(--transition-time), transform var(--transition-time) !important;
+}
+
+.slide-up-collapse-exit {
+    overflow: hidden;
+    max-height: 100px;
+    opacity: 1;
+}
+
+.slide-up-collapse-exit-active, .slide-up-collapse-exit-done {
+    transition: opacity var(--transition-time), max-height var(--transition-time) !important;
+    opacity: 0;
+    max-height: 0
+}
