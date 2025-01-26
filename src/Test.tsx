@@ -4,7 +4,6 @@ import {CSSFadeTransition} from "./components/transitions/CSSFadeTransition";
 import {Button, Stack} from "@mui/material";
 
 
-// eslint-disable @typescript-eslint/no-unused-vars
 const TestTransition = () => {
     const [inProp, setInProp] = useState(false);
     const nodeRef = useRef(null);

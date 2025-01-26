@@ -1,4 +1,4 @@
-import {TextBubble} from "./TextBubble";
+import {TextBubble, TextBubbleProps} from "./TextBubble";
 import {CSSProperties, RefObject, useContext, useEffect, useRef, useState} from "react";
 import {
     DEFAULT_BOARD_DIMENS,
@@ -14,7 +14,7 @@ import styled from "@emotion/styled";
 import {keyframes} from "@emotion/react";
 import {TimeBar} from "./TimeBar";
 import {GameContext} from "../data/GameContext";
-import {Button, Card, IconButton, Stack} from "@mui/material";
+import {Button, Stack} from "@mui/material";
 import {PlayArrow, PlayCircleFilled, ReplayCircleFilled} from "@mui/icons-material";
 import {selectBestScale} from "../utilites";
 import {Bubble, ControlState, ControlStates, Statuses} from "../types";
@@ -56,7 +56,10 @@ const DEMO_SCORES: TrackScores[] = [{
         {"id": 10, "name": "Mariam", "score": 30}
     ]
 
-}, {track: 'medium', scores: [ {"id": 1, "name": "Ahmed", "score": 40},  {"id": 4, "name": "Ousha", "score": 50},]}, {track: 'hard', scores: [ {"id": 1, "name": "Ahmed", "score": 30}]}]
+}, {
+    track: 'medium',
+    scores: [{"id": 1, "name": "Ahmed", "score": 40}, {"id": 4, "name": "Ousha", "score": 50},]
+}, {track: 'hard', scores: [{"id": 1, "name": "Ahmed", "score": 30}]}]
 
 const EMPTY_SCORES: TrackScores[] = [{
     track: 'easy',
@@ -296,9 +299,8 @@ export const BubblesBoard = ({
                 {bubbles.map((b) => <FloatingBubble key={b.value} style={{left: b.auxiliary * 100 + '%'}}
                                                     size={b.size + 'px'}
                                                     duration={b.duration}
-                                                    refFix={b.reference}>
-                        {b.value}
-                    </FloatingBubble>
+                                                    refFix={b.reference as RefObject<HTMLDivElement>}
+                                                    children={b.value + ""}/>
                 )}
 
             </div>
@@ -364,9 +366,9 @@ export const BubblesBoard = ({
                         <Button onClick={unpause}><PlayArrow color={'primary'}
                                                              fontSize={'large'}/></Button>) ||
                         (gameContext.gameStartTime === -1 ?
-                                <Button onClick={play} sx={{color:'white'}}><PlayCircleFilled
-                                    fontSize={'large'}/>&nbsp;Play</Button>:
-                                <Button onClick={play} sx={{color:'white'}}><ReplayCircleFilled
+                                <Button onClick={play} sx={{color: 'white'}}><PlayCircleFilled
+                                    fontSize={'large'}/>&nbsp;Play</Button> :
+                                <Button onClick={play} sx={{color: 'white'}}><ReplayCircleFilled
                                     fontSize={'large'}/>&nbsp;Restart</Button>
                         )
                     }
@@ -389,7 +391,8 @@ const floatUp = keyframes`
     }
 `
 
-const FloatingBubble = styled(TextBubble)`
+type FloatingBubbleProps = TextBubbleProps & { duration: number }
+const FloatingBubble = styled(TextBubble)<FloatingBubbleProps>`
     position: absolute;
     animation: ${floatUp} linear ${(props) => props.duration}ms forwards;
 `

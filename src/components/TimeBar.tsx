@@ -1,15 +1,14 @@
-import {useContext, useEffect, useState} from "react";
+import {CSSProperties, useContext, useEffect, useState} from "react";
 import {GameContext} from "../data/GameContext";
 import {LinearProgress, Paper} from "@mui/material";
 import {constrainBetween} from "../utilites";
-import {CSSSlideUpTransition} from "./transitions/CSSSlideUpTransition";
 import {CSSFadeTransition} from "./transitions/CSSFadeTransition";
 import {Statuses} from "../types";
 
 export const TimeBar = ({
-    style,
-    ...rest
-}: any) => {
+                            style = {},
+                            ...rest
+                        }: { style?: CSSProperties }) => {
     const gameContext = useContext(GameContext);
     const [remaining, setRemaining] = useState(100);
 
