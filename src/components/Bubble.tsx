@@ -34,14 +34,14 @@ const BubbleTopShine = styled.span<{ size: number | string }>`
 `
 
 export interface BubbleProps {
-    color: string,
-    size: number | string,
-    className: string,
+    color?: string,
+    size?: number | string,
+    className?: string,
     refFix: RefObject<HTMLDivElement>
     children?: ReactElement,
 }
 
-export const Bubble = forwardRef(({className, color, size, children, refFix, ...rest}: BubbleProps, ref) => {
+export const Bubble = forwardRef(({className= '', color, size, children, refFix, ...rest}: BubbleProps, ref) => {
     return <div className={`bubble ${className}`} ref={refFix} {...rest}>
         <InnerBubble size={size || '12vw'} color={color || '#8f8'} className='bubble-inner'>
             <BubbleTopShine className='bubble-top' size={size || '12vw'} color={color || '#8f8'}/>

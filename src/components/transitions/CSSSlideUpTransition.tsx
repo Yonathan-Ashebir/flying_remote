@@ -8,7 +8,7 @@ interface Props {
     appear?: boolean,
     timeout?: number,
     style?: CSSProperties,
-    in: boolean,
+    in?: boolean,
 }
 
 export const CSSSlideUpTransition = ({

@@ -134,7 +134,7 @@ export default function LeaderBoard({
 
     return (
         <StyledPaper elevation={8}>
-            <Stack direction={'row'} align={'center'} justifyContent={'center'}>
+            <Stack direction={'row'} alignItems={'center'} justifyContent={'center'}>
                 <Typography className="m-0 p-0" variant="h4" gutterBottom
                             sx={{textAlign: 'center', fontWeight: 'bold', marginBottom: 0}}>
                     Leaderboard
@@ -201,7 +201,8 @@ export default function LeaderBoard({
                             ref={score.id === latestScoreID ? latestScoreRef : null}
                         >
                             <RankIcon>
-                                {index < 3 ? getRankIcon(index) : <span className='font-bold text-xl'>{index + 1}</span>}
+                                {index < 3 ? getRankIcon(index) :
+                                    <span className='font-bold text-xl'>{index + 1}</span>}
                             </RankIcon>
                             <Box sx={{flexGrow: 1}}>
                                 <Typography variant="subtitle1">{score.name}</Typography>
@@ -247,7 +248,7 @@ export default function LeaderBoard({
                 <DialogTitle>Enter Your Name</DialogTitle>
                 <DialogContent>
                     <TextField
-                        color={'white'}
+                        style={{color: 'white'}}
                         autoFocus
                         margin="dense"
                         label="Your Name"
