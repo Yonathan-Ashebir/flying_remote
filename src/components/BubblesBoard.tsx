@@ -18,7 +18,7 @@ import {PlayArrow, PlayCircleFilled, ReplayCircleFilled} from "@mui/icons-materi
 import {selectBestScale} from "../utilites";
 
 
-export const BubblesBoard = props => {
+export const BubblesBoard = (props: any) => {
     const {bubbles, popBubble, controlState, handTrackerRef} = props
     const bubblesRef = useRef(bubbles)
     bubblesRef.current = bubbles
@@ -37,7 +37,7 @@ export const BubblesBoard = props => {
         const data = {trail: []}
         const maximumHistorySize = 50;
         const trailer = trailContainer.current
-        const dispatch = (action, boardDimension) => {
+        const dispatch = (action: any, boardDimension: any) => {
             const {x, y, type} = action
             switch (type) {
                 case 'pen-down':
@@ -50,7 +50,6 @@ export const BubblesBoard = props => {
                         const cy = boardDimension.height - (now - bubble.createTime) * (boardDimension.height + maxBubbleSize * 1.5) / bubble.duration + bubble.size / 2
                         if ((cx - x) ** 2 + (cy - y) ** 2 < bubble.size ** 2 / 2) popBubble(bubble)
                     }
-
                     pen.current.style.top = `${y}px`
                     pen.current.style.left = `${x}px`
                     const trailSpot = document.createElement('div')
@@ -99,10 +98,9 @@ export const BubblesBoard = props => {
             }
             const measurements = {current: measure()}
             const onResize = () => {measurements.current = measure()}
-
             videoElement.current.onloadedmetadata = () => {
                 window.addEventListener('resize', onResize)
-                const trackHand = (data) => {
+                const trackHand = (data: any) => {
                     const {lastVideoTime, penDown = false} = data
                     if (myTicket !== handlerTicket.current) return
                     const startTimeMs = performance.now();
@@ -133,8 +131,8 @@ export const BubblesBoard = props => {
                 for (const child of trailer.children) child.remove()
                 window.removeEventListener('resize', onResize)
                 dispatch({type: 'pen-up'})
-                videoSource.getTracks().forEach(t => t.stop())
-            }
+                videoSource.getTracks().forEach((t: any) => t.stop())
+            };
         } else {
             setBoardDimensions(DEFAULT_BOARD_DIMENS)
 
@@ -152,7 +150,7 @@ export const BubblesBoard = props => {
                 width: window.innerWidth * MAX_BOARD_WIDTH_RATIO,
                 height: window.innerHeight * MAX_BOARD_HEIGHT_RATIO
             })
-            trailer.onmousemove = ev => {
+            trailer.onmousemove = (ev: any) => {
                 if (bounds.updateBound && bounds.updateStopTime > Date.now()) {
                     bounds.current = trailer.getBoundingClientRect() //todo: can do better?
                     bounds.updateBound = bounds.updateStopTime > Date.now()
@@ -193,86 +191,86 @@ export const BubblesBoard = props => {
 
     }, [popBubble, useHand, handTrackerRef]);
 
-    return <div style={{
-        ...boardDimensions,
-        background: '#08c linear-gradient(#33bbff, #08c, #004466)',
-        justifyContent: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'width 0.5s, height 0.5s', ...props.style
-    }}>
-        <video autoPlay playsInline style={{
-            ...videoDimensions,
-            transition: 'width 0.5s, height 0.5s',
-            opacity: useHand ? 0.5 : 0,
-            filter: 'blur(10px)',
-            transform: 'scaleX(-1)'
-        }}
-               ref={videoElement}/>
-        <div style={{width: `calc(100% - ${maxBubbleSize}px)`, height: '100%', position: 'absolute', top: '0'}}>
-            {bubbles.map(b =>
-                <FloatingBubble key={b.value} style={{left: b.auxiliary * 100 + '%'}}
+    return (
+        <div style={{
+            ...boardDimensions,
+            background: '#08c linear-gradient(#33bbff, #08c, #004466)',
+            justifyContent: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+            transition: 'width 0.5s, height 0.5s', ...props.style
+        }}>
+            <video autoPlay playsInline style={{
+                ...videoDimensions,
+                transition: 'width 0.5s, height 0.5s',
+                opacity: useHand ? 0.5 : 0,
+                filter: 'blur(10px)',
+                transform: 'scaleX(-1)'
+            }}
+                   ref={videoElement}/>
+            <div style={{width: `calc(100% - ${maxBubbleSize}px)`, height: '100%', position: 'absolute', top: '0'}}>
+                {bubbles.map((b: any) => <FloatingBubble key={b.value} style={{left: b.auxiliary * 100 + '%'}}
                                 className={b.popped ? 'popped' : ''} size={b.size + 'px'} duration={b.duration}
                                 refFix={b.reference}>
                     {b.value}
                 </FloatingBubble>
-            )}
+                )}
 
-        </div>
-        <div ref={trailContainer}
-             style={{width: '100%', height: '100%', position: 'absolute', top: '0'}}>
-        </div>
-        <div className='pen' ref={pen} style={{
-            width: '10px',
-            height: '10px',
-            background: 'red',
-            position: 'absolute',
-            transform: 'translate(-50%, -50%)',
-            borderRadius: '50%',
-            top: '0'
-        }}></div>
-
-        <div className='pen' ref={pen2} style={{
-            width: '10px',
-            height: '10px',
-            background: 'green',
-            position: 'absolute',
-            transform: 'translate(-50%, -50%)',
-            borderRadius: '50%',
-            opacity: 0.5,
-            top: '0',
-            display: "none"
-        }}></div>
-        <TimeBar style={{position: 'absolute', top: '50px', left: '50%', transform: 'translateX(-50%)'}}/>
-        {gameContext.status !== Status.PLAYING && <Stack justifyContent={'center'} alignItems={'center'}>
-            <Stack style={{
-                visibility: gameContext.status === Status.PLAYING ? 'hidden' : 'visible',
-                opacity: gameContext.status === Status.PLAYING ? 0 : 1,
-                transition: 'opacity 0.5s',
-                background: '#00000055',
-                backdropFilter: 'blur(10px)',
-                width: '100%',
-                height: '100%',
+            </div>
+            <div ref={trailContainer}
+                 style={{width: '100%', height: '100%', position: 'absolute', top: '0'}}>
+            </div>
+            <div className='pen' ref={pen} style={{
+                width: '10px',
+                height: '10px',
+                background: 'red',
                 position: 'absolute',
-                top: 0,
-                left: 0
-            }} alignItems={'center'} justifyContent={'center'}>
-                <Card>
-                    {(gameContext.status === Status.PAUSED &&
-                            <Button onClick={props.unpause}><PlayArrow color={'primary'}
-                                                                       fontSize={'large'}/></Button>) ||
-                        (gameContext.gameStartTime === -1 ?
-                                <Button onClick={props.play}><PlayCircleFilled
-                                    fontSize={'large'} color={'primary'}/>&nbsp;Start</Button> :
-                                <Button onClick={props.play}><ReplayCircleFilled
-                                    fontSize={'large'} color={'primary'}/>&nbsp;Restart</Button>
-                        )
-                    }
-                </Card>
+                transform: 'translate(-50%, -50%)',
+                borderRadius: '50%',
+                top: '0'
+            }}></div>
+            <div className='pen' ref={pen2} style={{
+                width: '10px',
+                height: '10px',
+                background: 'green',
+                position: 'absolute',
+                transform: 'translate(-50%, -50%)',
+                borderRadius: '50%',
+                opacity: 0.5,
+                top: '0',
+                display: "none"
+            }}></div>
+            <TimeBar style={{position: 'absolute', top: '50px', left: '50%', transform: 'translateX(-50%)'}}/>
+            {gameContext.status !== Status.PLAYING && <Stack justifyContent={'center'} alignItems={'center'}>
+                <Stack style={{
+                    visibility: gameContext.status === Status.PLAYING ? 'hidden' : 'visible',
+                    opacity: gameContext.status === Status.PLAYING ? 0 : 1,
+                    transition: 'opacity 0.5s',
+                    background: '#00000055',
+                    backdropFilter: 'blur(10px)',
+                    width: '100%',
+                    height: '100%',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0
+                }} alignItems={'center'} justifyContent={'center'}>
+                    <Card>
+                        {(gameContext.status === Status.PAUSED &&
+                                <Button onClick={props.unpause}><PlayArrow color={'primary'}
+                                                                           fontSize={'large'}/></Button>) ||
+                            (gameContext.gameStartTime === -1 ?
+                                    <Button onClick={props.play}><PlayCircleFilled
+                                        fontSize={'large'} color={'primary'}/>&nbsp;Start</Button> :
+                                    <Button onClick={props.play}><ReplayCircleFilled
+                                        fontSize={'large'} color={'primary'}/>&nbsp;Restart</Button>
+                            )
+                        }
+                    </Card>
 
-            </Stack>
-        </Stack>}
-    </div>
+                </Stack>
+            </Stack>}
+        </div>
+    );
 }
 
 const floatUp = keyframes`
@@ -289,5 +287,5 @@ const floatUp = keyframes`
 
 const FloatingBubble = styled(TextBubble)`
     position: absolute;
-    animation: ${floatUp} linear ${props => props.duration}ms forwards;
+    animation: ${floatUp} linear ${(props: any) => props.duration}ms forwards;
 `

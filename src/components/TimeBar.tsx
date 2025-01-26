@@ -6,7 +6,10 @@ import {constrainBetween} from "../utilites";
 import {CSSSlideUpTransition} from "./transitions/CSSSlideUpTransition";
 import {CSSFadeTransition} from "./transitions/CSSFadeTransition";
 
-export const TimeBar = ({style, ...rest}) => {
+export const TimeBar = ({
+    style,
+    ...rest
+}: any) => {
     const gameContext = useContext(GameContext);
     const [remaining, setRemaining] = useState(100);
 

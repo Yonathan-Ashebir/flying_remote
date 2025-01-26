@@ -21,7 +21,7 @@ import {GameContext} from "./data/GameContext";
 import {Stack} from "@mui/material";
 
 
-const SolveForX = props => {
+const SolveForX = (props: any) => {
   const [bubbles, setBubbles] = useState([]);
   const [score, setScore] = useState(0);
   const [status, setStatus] = useState(Status.STOPPED);
@@ -32,7 +32,7 @@ const SolveForX = props => {
   const sessionInfo = useRef({});
   sessionInfo.current.session = session;
   sessionInfo.current.difficulty = difficulty;
-  const popBubble = useCallback(bubble => events.current.push({type: 'pop', value: bubble.value})
+  const popBubble = useCallback((bubble: any) => events.current.push({type: 'pop', value: bubble.value})
     , [])
   const [gameStartTime, setGameStartTime] = useState(-1);
   const [gameEndTime, setGameEndTime] = useState(-1);
@@ -57,8 +57,8 @@ const SolveForX = props => {
         (async () => {
           console.log('game started')
 
-          let myBubbles = []
-          let myEquations = []
+          let myBubbles: any = []
+          let myEquations: any = []
           let myScore = 0
           const now = Date.now()
           let myGameStartTime = now;
@@ -74,7 +74,7 @@ const SolveForX = props => {
 
           let nextBubbleTime = 0;
           myLoop: while (session === sessionInfo.current.session) {
-            let e;
+            let e: any;
             let updateBubbles = false;
             let updateMyEquations = false
             let updateScore = false;
@@ -125,7 +125,7 @@ const SolveForX = props => {
 
             if (now > nextBubbleTime) {
               const numberBounds = getNumberBounds(difficulty)
-              let value = null;
+              let value: any = null;
               do {
                 value = Math.floor(getRandom(...numberBounds));
               } while (!myBubbles.every(b => b.value !== value));
@@ -140,7 +140,6 @@ const SolveForX = props => {
                 reference: createRef()
               });
               nextBubbleTime = now + getRandom(...getNextBubbleTimeBounds(difficulty))
-
               myBubbles = myBubbles.filter(b => {
                 if (now - b.createTime > b.duration) {
                   myEquations = myEquations.filter(eq => {
@@ -156,8 +155,6 @@ const SolveForX = props => {
                 return true;
               })
               updateBubbles = true
-
-
               myEquations = myEquations.filter(eq => {
                 if (eq.suspended && now > eq.releaseTime) {
                   updateMyEquations = true
@@ -193,8 +190,6 @@ const SolveForX = props => {
       }
     }, [session]
   )
-
-
   return <GameContext.Provider value={gameContext}>
     <Stack justifyContent={'center'} alignItems={'center'} width={'100%'} height={'100%'}>
       <Stack direction={'row'} justifyContent={'center'} style={{borderRadius: '10px', overflow: "hidden"}}>

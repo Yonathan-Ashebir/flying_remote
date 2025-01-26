@@ -9,14 +9,13 @@ const TestTransition = () => {
     return (
         <div>
             <Transition mountOnEnter={true} nodeRef={nodeRef} in={inProp} timeout={500}>
-                {state => (
-                    <p ref={nodeRef}>{state}</p>
-                )}
+                {(state: any) => <p ref={nodeRef}>{state}</p>}
             </Transition>
             <button onClick={() => setInProp(!inProp)}>
                 Click to Enter
             </button>
-        </div>)
+        </div>
+    );
 }
 
 const TestFadeSwitch = () => {
