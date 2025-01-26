@@ -14,7 +14,7 @@ import styled from "@emotion/styled";
 import {keyframes} from "@emotion/react";
 import {TimeBar} from "./TimeBar";
 import {GameContext} from "../data/GameContext";
-import {Button, Card, Stack} from "@mui/material";
+import {Button, Card, IconButton, Stack} from "@mui/material";
 import {PlayArrow, PlayCircleFilled, ReplayCircleFilled} from "@mui/icons-material";
 import {selectBestScale} from "../utilites";
 import {Bubble, ControlState, ControlStates, Statuses} from "../types";
@@ -25,12 +25,13 @@ interface Props {
     bubbles: Bubble[];
     popBubble: (bubble: Bubble) => void;
     controlState: ControlState;
-    handTrackerRef: RefObject<{ handMarker?: HandLandmarker, videoSource?: MediaStream }>; //TODO
+    handTrackerRef: RefObject<{ handMarker?: HandLandmarker, videoSource?: MediaStream }>;
     style: CSSProperties;
     unpause: () => void;
     play: () => void;
-    pendingScore:{score:number, track: TrackScores['track']} | null;
-    setPendingScore: (pending: {score:number, track: TrackScores['track']} | null) => void;
+    pendingScore: { score: number, track: TrackScores['track'] } | null;
+    setPendingScore: (pending: { score: number, track: TrackScores['track'] } | null) => void;
+    popSoundRef: RefObject<HTMLAudioElement>;
 }
 
 const PenActions = {
@@ -40,20 +41,26 @@ const PenActions = {
 } as const;
 type PenAction = typeof PenActions[keyof typeof PenActions];
 
-const INITIAL_SCORES: TrackScores[] = [{
+const DEMO_SCORES: TrackScores[] = [{
     track: 'easy',
     scores: [
-        { "id": 1, "name": "Ahmed", "score": 120 },
-        { "id": 2, "name": "Fatima", "score": 250 },
-        { "id": 3, "name": "Omar", "score": 85 },
-        { "id": 4, "name": "Aisha", "score": 175 },
-        { "id": 5, "name": "Ali", "score": 210 },
-        { "id": 6, "name": "Zainab", "score": 95 },
-        { "id": 7, "name": "Hassan", "score": 160 },
-        { "id": 8, "name": "Khadija", "score": 130 },
-        { "id": 9, "name": "Ibrahim", "score": 230 },
-        { "id": 10, "name": "Mariam", "score": 180 }
+        {"id": 1, "name": "Ahmed", "score": 80},
+        {"id": 2, "name": "Fatima", "score": 20},
+        {"id": 3, "name": "Omar", "score": 40},
+        {"id": 4, "name": "Aisha", "score": 65},
+        {"id": 5, "name": "Ali", "score": 35},
+        {"id": 6, "name": "Zainab", "score": 20},
+        {"id": 7, "name": "Hassan", "score": 55},
+        {"id": 8, "name": "Khadija", "score": 45},
+        {"id": 9, "name": "Ibrahim", "score": 65},
+        {"id": 10, "name": "Mariam", "score": 30}
     ]
+
+}, {track: 'medium', scores: [ {"id": 1, "name": "Ahmed", "score": 40},  {"id": 4, "name": "Ousha", "score": 50},]}, {track: 'hard', scores: [ {"id": 1, "name": "Ahmed", "score": 30}]}]
+
+const EMPTY_SCORES: TrackScores[] = [{
+    track: 'easy',
+    scores: []
 
 }, {track: 'medium', scores: []}, {track: 'hard', scores: []}]
 
@@ -67,6 +74,7 @@ export const BubblesBoard = ({
                                  play,
                                  pendingScore,
                                  setPendingScore,
+                                 popSoundRef,
                                  ...rest
                              }: Props) => {
     const bubblesRef = useRef(bubbles)
@@ -79,11 +87,25 @@ export const BubblesBoard = ({
     const useHand = controlState === ControlStates.HAND
     const [boardDimensions, setBoardDimensions] = useState(DEFAULT_BOARD_DIMENS);
     const [videoDimensions, setVideoDimensions] = useState(DEFAULT_BOARD_DIMENS);
-    const handlerTicket = useRef(0)
-    const [scores, setScores] = useState<TrackScores[]>(INITIAL_SCORES);
+    const handlerTicket = useRef(Math.random())
+
+    const [scores, setScores] = useState<TrackScores[]>(() => {
+        const oldScores = localStorage.getItem('scores')
+        return (oldScores ? JSON.parse(oldScores) as TrackScores[] : DEMO_SCORES).map(({track, scores}) => ({
+            track,
+            scores: scores.sort((a, b) => b.score - a.score)
+        }))
+    });
+
+    useEffect(() => {
+        localStorage.setItem('scores', JSON.stringify(scores))
+    }, [scores]);
 
     const [latestScoreID, setLatestScoreID] = useState<number | null>(scores.find(t => t.scores.length)?.scores[0]?.id || null)
-    const scoreID = useRef(0)
+    const scoreID = useRef(-1)
+    if (scoreID.current === -1) {
+        scoreID.current = Number.parseInt(localStorage.getItem('lastID') ?? '30')
+    }
 
     useEffect(() => {
         const myTicket = ++handlerTicket.current
@@ -257,20 +279,22 @@ export const BubblesBoard = ({
             background: '#08c linear-gradient(#33bbff, #08c, #004466)',
             justifyContent: 'center',
             position: 'relative',
-            overflow: 'hidden',
+            overflow: 'clip',
             transition: 'width 0.5s, height 0.5s', ...style
         }} {...rest}>
             <video autoPlay playsInline style={{
-                ...videoDimensions,
+                ...videoDimensions, //TODO: why height is causing issues
                 transition: 'width 0.5s, height 0.5s',
                 opacity: useHand ? 0.5 : 0,
                 filter: 'blur(10px)',
-                transform: 'scaleX(-1)'
+                transform: 'scaleX(-1)',
+                maxWidth: 'unset',
+                maxHeight: 'unset',
             }}
                    ref={videoElement}/>
             <div style={{width: `calc(100% - ${maxBubbleSize}px)`, height: '100%', position: 'absolute', top: '0'}}>
                 {bubbles.map((b) => <FloatingBubble key={b.value} style={{left: b.auxiliary * 100 + '%'}}
-                                                    className={b.popped ? 'popped' : ''} size={b.size + 'px'}
+                                                    size={b.size + 'px'}
                                                     duration={b.duration}
                                                     refFix={b.reference}>
                         {b.value}
@@ -278,6 +302,7 @@ export const BubblesBoard = ({
                 )}
 
             </div>
+            <audio ref={popSoundRef} src="/pop.mp3" preload="auto" className={'hidden'}></audio>
             <div ref={trailContainer as RefObject<HTMLDivElement>}
                  style={{width: '100%', height: '100%', position: 'absolute', top: '0'}}>
             </div>
@@ -320,28 +345,33 @@ export const BubblesBoard = ({
                                  return;
                                  const currentTrackScores = scores.find(scores => scores.track === track)!
                                  const currentTrackIndex = scores.findIndex(t => t.track === track)
-                                 const newScores = {...scores}
+                                 const newScores = [...scores]
                                  newScores[currentTrackIndex] = {
                                      ...currentTrackScores,
                                      scores: [...(currentTrackScores.scores), {id: scoreID.current, name, score}]
                                  }
-                                 setScores(newScores)
+                                 setScores(newScores.map(({track, scores}) => ({
+                                     track,
+                                     scores: scores.sort((a, b) => b.score - a.score)
+                                 })))
                                  setPendingScore(null)
                                  setLatestScoreID(scoreID.current++)
+                                 localStorage.setItem("lastID", scoreID.current.toString())
                              }}
-                             clearLeaderBoard={() => setScores(INITIAL_SCORES)} latestScoreID={latestScoreID}></LeaderBoard>
-                <Card className="mt-4">
+                             clearLeaderBoard={() => setScores(EMPTY_SCORES)}
+                             latestScoreID={latestScoreID}></LeaderBoard>
+                <div className="mt-4" style={{backgroundColor: 'transparent'}}>
                     {(gameContext.status === Statuses.PAUSED &&
                         <Button onClick={unpause}><PlayArrow color={'primary'}
                                                              fontSize={'large'}/></Button>) ||
                         (gameContext.gameStartTime === -1 ?
-                                <Button onClick={play}><PlayCircleFilled
-                                    fontSize={'large'} color={'primary'}/>&nbsp;Start</Button> :
-                                <Button onClick={play}><ReplayCircleFilled
-                                    fontSize={'large'} color={'primary'}/>&nbsp;Restart</Button>
+                                <Button onClick={play} sx={{color:'white'}}><PlayCircleFilled
+                                    fontSize={'large'}/>&nbsp;Play</Button>:
+                                <Button onClick={play} sx={{color:'white'}}><ReplayCircleFilled
+                                    fontSize={'large'}/>&nbsp;Restart</Button>
                         )
                     }
-                </Card>
+                </div>
             </Stack>
         </div>
     )

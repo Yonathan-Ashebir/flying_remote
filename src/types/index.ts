@@ -28,7 +28,6 @@ export interface Bubble {
     duration: number,
     auxiliary: number,
     size: number,
-    popped: boolean,
     reference: RefObject<HTMLElement>
 }
 

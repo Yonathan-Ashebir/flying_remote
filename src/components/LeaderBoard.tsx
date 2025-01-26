@@ -159,7 +159,7 @@ export default function LeaderBoard({
                 centered
                 sx={{mb: 3}}
                 TabIndicatorProps={{
-                    sx: {backgroundColor: '#fff'}
+                    sx: {backgroundColor: '#fff', transitionDuration: 'all 1s, opacity 0'}
                 }}
             >
                 {scores.map((track) => (
@@ -201,7 +201,7 @@ export default function LeaderBoard({
                             ref={score.id === latestScoreID ? latestScoreRef : null}
                         >
                             <RankIcon>
-                                {getRankIcon(index)}
+                                {index < 3 ? getRankIcon(index) : <span className='font-bold text-xl'>{index + 1}</span>}
                             </RankIcon>
                             <Box sx={{flexGrow: 1}}>
                                 <Typography variant="subtitle1">{score.name}</Typography>
@@ -247,6 +247,7 @@ export default function LeaderBoard({
                 <DialogTitle>Enter Your Name</DialogTitle>
                 <DialogContent>
                     <TextField
+                        color={'white'}
                         autoFocus
                         margin="dense"
                         label="Your Name"

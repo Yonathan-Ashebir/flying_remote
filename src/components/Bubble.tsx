@@ -1,6 +1,6 @@
 import './bubble.css'
 import styled from '@emotion/styled'
-import {forwardRef, ReactElement, RefObject} from "react";
+import {forwardRef, ReactElement, RefObject, useEffect, useRef} from "react";
 
 const InnerBubble = styled.span<{ size: number | string }>`
     width: ${(props) => props.size};
@@ -38,7 +38,7 @@ export const Bubble = forwardRef(({className, color, size, children, refFix, ...
     size: number | string,
     className: string,
     refFix: RefObject<HTMLDivElement>
-    children?: ReactElement
+    children?: ReactElement,
 }, ref) => {
     return <div className={`bubble ${className}`} ref={refFix} {...rest}>
         <InnerBubble size={size || '12vw'} color={color || '#8f8'} className='bubble-inner'>

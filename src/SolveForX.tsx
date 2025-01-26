@@ -62,6 +62,7 @@ const SolveForX = () => {
         gameEndTime
     }), [difficulty, status, gameStartTime, gameEndTime])
     const [pendingScore, setPendingScore] = useState<{ score: number, track: TrackScores['track'] } | null>(null);
+    const popSoundRef = useRef<HTMLAudioElement>(null)
 
     /* game play controls */
     const play = useCallback(() => setSession(session + 1), [session])
@@ -100,11 +101,12 @@ const SolveForX = () => {
                         while ((e = events.current.pop())) {
                             switch (e.type) {
                                 case EventTypes.POP: {
-                                    const reference = myBubbles.find(b => b.value === e!.value)?.reference?.current
+                                    const bubbleIndex = myBubbles.findIndex(b => b.value === e!.value);
+                                    const reference = bubbleIndex == -1 ? null : myBubbles[bubbleIndex].reference?.current;
                                     if (reference && !reference.classList.contains('popped')) {
                                         const eqIndex = myEquations.findIndex(eq => !eq.suspended && eq.answer === e!.value)
                                         if (eqIndex >= 0) {
-                                            myEquations.splice(eqIndex, 1)
+                                            myEquations = myEquations.splice(eqIndex, 1)
                                             myScore += getBonus(eqIndex, difficulty)
                                         } else {
                                             if (myEquations.length) {
@@ -117,6 +119,8 @@ const SolveForX = () => {
                                         updateScore = true
                                         updateMyEquations = true
                                         reference.classList.add('popped')
+                                        popSoundRef.current!.currentTime = 0.45
+                                        popSoundRef.current!.play().then()
                                     }
                                     break
                                 }
@@ -153,15 +157,14 @@ const SolveForX = () => {
                                 value = Math.floor(getRandom(...numberBounds));
                             } while (!myBubbles.every(b => b.value !== value));
 
-                            myBubbles.push({
+                            myBubbles = [...myBubbles, {
                                 value,
                                 createTime: now,
                                 duration: getRandom(...getBubbleDurationBounds(difficulty)),
                                 auxiliary: Math.random(),
                                 size: getRandom(...getBubbleSizeBounds(difficulty)),
-                                popped: false,
                                 reference: createRef()
-                            });
+                            }];
                             nextBubbleTime = now + getRandom(...getNextBubbleTimeBounds(difficulty))
                             myBubbles = myBubbles.filter(b => {
                                 if (now - b.createTime > b.duration) {
@@ -195,7 +198,7 @@ const SolveForX = () => {
 
                                 if (candidates.length) {
                                     const newEq = generateEquation(candidates[Math.floor(getRandom(0, candidates.length))].value, difficulty)
-                                    myEquations.push(newEq)
+                                    myEquations = [...myEquations, newEq]
                                     updateMyEquations = true
                                 }
                             }
@@ -221,7 +224,7 @@ const SolveForX = () => {
                               popBubble={popBubble} style={{}} play={play} unpause={unpause}
                               controlState={controlState}
                               handTrackerRef={handTrackerRef} pendingScore={pendingScore}
-                              setPendingScore={setPendingScore}/>
+                              setPendingScore={setPendingScore} popSoundRef={popSoundRef}/>
                 <EquationsBar score={score} equations={equations} stop={stop} pause={pause}
                               setDifficulty={setDifficulty}
                               controlState={controlState} setControlState={setControlState}
