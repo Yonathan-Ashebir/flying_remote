@@ -14,7 +14,7 @@ import styled from "@emotion/styled";
 import {keyframes} from "@emotion/react";
 import {TimeBar} from "./TimeBar";
 import {GameContext} from "../data/GameContext";
-import {Button, Card, Stack} from "@mui/material";
+import {Button, Card, IconButton, Stack} from "@mui/material";
 import {PlayArrow, PlayCircleFilled, ReplayCircleFilled} from "@mui/icons-material";
 import {selectBestScale} from "../utilites";
 import {Bubble, ControlState, ControlStates, Statuses} from "../types";
@@ -74,7 +74,7 @@ export const BubblesBoard = ({
                                  play,
                                  pendingScore,
                                  setPendingScore,
-    popSoundRef,
+                                 popSoundRef,
                                  ...rest
                              }: Props) => {
     const bubblesRef = useRef(bubbles)
@@ -359,18 +359,18 @@ export const BubblesBoard = ({
                              }}
                              clearLeaderBoard={() => setScores(EMPTY_SCORES)}
                              latestScoreID={latestScoreID}></LeaderBoard>
-                <Card className="mt-4">
+                <div className="mt-4" style={{backgroundColor: 'transparent'}}>
                     {(gameContext.status === Statuses.PAUSED &&
                         <Button onClick={unpause}><PlayArrow color={'primary'}
                                                              fontSize={'large'}/></Button>) ||
                         (gameContext.gameStartTime === -1 ?
-                                <Button onClick={play}><PlayCircleFilled
-                                    fontSize={'large'} color={'primary'}/>&nbsp;Start</Button> :
-                                <Button onClick={play}><ReplayCircleFilled
-                                    fontSize={'large'} color={'primary'}/>&nbsp;Restart</Button>
+                                <Button onClick={play} sx={{color:'white'}}><PlayCircleFilled
+                                    fontSize={'large'}/>&nbsp;Play</Button>:
+                                <Button onClick={play} sx={{color:'white'}}><ReplayCircleFilled
+                                    fontSize={'large'}/>&nbsp;Restart</Button>
                         )
                     }
-                </Card>
+                </div>
             </Stack>
         </div>
     )
