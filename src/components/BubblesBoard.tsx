@@ -58,8 +58,8 @@ const DEMO_SCORES: TrackScores[] = [{
 
 }, {
     track: 'medium',
-    scores: [{"id": 1, "name": "Ahmed", "score": 40}, {"id": 4, "name": "Ousha", "score": 50},]
-}, {track: 'hard', scores: [{"id": 1, "name": "Ahmed", "score": 30}]}]
+    scores: [{"id": 11, "name": "Ahmed", "score": 40}, {"id": 12, "name": "Ousha", "score": 50},]
+}, {track: 'hard', scores: [{"id": 13, "name": "Ahmed", "score": 30}]}]
 
 const EMPTY_SCORES: TrackScores[] = [{
     track: 'easy',
