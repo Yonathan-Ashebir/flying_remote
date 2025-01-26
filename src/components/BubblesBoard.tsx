@@ -44,19 +44,19 @@ type PenAction = typeof PenActions[keyof typeof PenActions];
 const DEMO_SCORES: TrackScores[] = [{
     track: 'easy',
     scores: [
-        {"id": 1, "name": "Ahmed", "score": 120},
-        {"id": 2, "name": "Fatima", "score": 250},
-        {"id": 3, "name": "Omar", "score": 85},
-        {"id": 4, "name": "Aisha", "score": 175},
-        {"id": 5, "name": "Ali", "score": 210},
-        {"id": 6, "name": "Zainab", "score": 95},
-        {"id": 7, "name": "Hassan", "score": 160},
-        {"id": 8, "name": "Khadija", "score": 130},
-        {"id": 9, "name": "Ibrahim", "score": 230},
-        {"id": 10, "name": "Mariam", "score": 180}
+        {"id": 1, "name": "Ahmed", "score": 80},
+        {"id": 2, "name": "Fatima", "score": 20},
+        {"id": 3, "name": "Omar", "score": 40},
+        {"id": 4, "name": "Aisha", "score": 65},
+        {"id": 5, "name": "Ali", "score": 35},
+        {"id": 6, "name": "Zainab", "score": 20},
+        {"id": 7, "name": "Hassan", "score": 55},
+        {"id": 8, "name": "Khadija", "score": 45},
+        {"id": 9, "name": "Ibrahim", "score": 65},
+        {"id": 10, "name": "Mariam", "score": 30}
     ]
 
-}, {track: 'medium', scores: []}, {track: 'hard', scores: []}]
+}, {track: 'medium', scores: [ {"id": 1, "name": "Ahmed", "score": 40},  {"id": 4, "name": "Ousha", "score": 50},]}, {track: 'hard', scores: [ {"id": 1, "name": "Ahmed", "score": 30}]}]
 
 const EMPTY_SCORES: TrackScores[] = [{
     track: 'easy',

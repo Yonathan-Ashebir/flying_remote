@@ -159,7 +159,7 @@ export default function LeaderBoard({
                 centered
                 sx={{mb: 3}}
                 TabIndicatorProps={{
-                    sx: {backgroundColor: '#fff'}
+                    sx: {backgroundColor: '#fff', transitionDuration: 'all 1s, opacity 0'}
                 }}
             >
                 {scores.map((track) => (

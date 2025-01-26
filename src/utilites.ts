@@ -48,7 +48,8 @@ export const selectScale = (dimens: { value: number, lower?: number, upper?: num
     return {maximumLowerScale, minimumUpperScale}
 }
 
-export const getNumberBounds = (difficulty: DifficultyLevel): [number, number] => difficulty === DifficultyLevels.EASY ? [0, 10] : difficulty === DifficultyLevels.MEDIUM ? [0, 20] : [0, 50]
+// export const getNumberBounds = (difficulty: DifficultyLevel): [number, number] => difficulty === DifficultyLevels.EASY ? [0, 10] : difficulty === DifficultyLevels.MEDIUM ? [0, 20] : [0, 50]
+export const getNumberBounds = (difficulty: DifficultyLevel): [number, number] => [0, 10]
 
 export const getRandom = (lower: number, upper: number) => lower + Math.random() * (upper - lower)
 
@@ -70,19 +71,19 @@ export const generateEquation = (answer: number, difficulty: DifficultyLevel): E
 };
 
 export const getNextBubbleTimeBounds = (difficulty: DifficultyLevel): [number, number] =>
-    difficulty === DifficultyLevels.EASY ? [400, 1000] :
-        difficulty === DifficultyLevels.MEDIUM ? [157.14, 557.14] :
-            [122.2, 322.2];
+    difficulty === DifficultyLevels.EASY ? [1000, 2000] :
+        difficulty === DifficultyLevels.MEDIUM ? [1000, 1500] :
+            [700, 1500];
 
 export const getBubbleDurationBounds = (difficulty: DifficultyLevel): [number, number] =>
-    difficulty === DifficultyLevels.EASY ? [4000, 4500] :
-        difficulty === DifficultyLevels.MEDIUM ? [2000, 3000] :
-            [1500, 2500];
+    difficulty === DifficultyLevels.EASY ? [6000, 7000] :
+        difficulty === DifficultyLevels.MEDIUM ? [3500, 5500] :
+            [2000, 4500];
 
 export const getShouldHaveEquationProbability = (difficulty: DifficultyLevel): number =>
     difficulty === DifficultyLevels.EASY ? 3 / 5 :
-        difficulty === DifficultyLevels.MEDIUM ? 3 / 7 :
-            1 / 3;
+        difficulty === DifficultyLevels.MEDIUM ? 3 / 5 :
+            3 / 5;
 
 export const getBubbleSizeBounds = (difficulty: DifficultyLevel): [number, number] => [70, 300];
 
