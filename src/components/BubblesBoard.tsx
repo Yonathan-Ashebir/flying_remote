@@ -1,5 +1,5 @@
 import {TextBubble} from "./TextBubble";
-import {CSSProperties, RefObject, useContext, useEffect, useMemo, useRef, useState} from "react";
+import {CSSProperties, RefObject, useContext, useEffect, useRef, useState} from "react";
 import {
     DEFAULT_BOARD_DIMENS,
     MAX_BOARD_HEIGHT_RATIO,
@@ -25,12 +25,13 @@ interface Props {
     bubbles: Bubble[];
     popBubble: (bubble: Bubble) => void;
     controlState: ControlState;
-    handTrackerRef: RefObject<{ handMarker?: HandLandmarker, videoSource?: MediaStream }>; //TODO
+    handTrackerRef: RefObject<{ handMarker?: HandLandmarker, videoSource?: MediaStream }>;
     style: CSSProperties;
     unpause: () => void;
     play: () => void;
     pendingScore: { score: number, track: TrackScores['track'] } | null;
     setPendingScore: (pending: { score: number, track: TrackScores['track'] } | null) => void;
+    popSoundRef: RefObject<HTMLAudioElement>;
 }
 
 const PenActions = {
@@ -73,6 +74,7 @@ export const BubblesBoard = ({
                                  play,
                                  pendingScore,
                                  setPendingScore,
+    popSoundRef,
                                  ...rest
                              }: Props) => {
     const bubblesRef = useRef(bubbles)
@@ -86,6 +88,7 @@ export const BubblesBoard = ({
     const [boardDimensions, setBoardDimensions] = useState(DEFAULT_BOARD_DIMENS);
     const [videoDimensions, setVideoDimensions] = useState(DEFAULT_BOARD_DIMENS);
     const handlerTicket = useRef(Math.random())
+
     const [scores, setScores] = useState<TrackScores[]>(() => {
         const oldScores = localStorage.getItem('scores')
         return (oldScores ? JSON.parse(oldScores) as TrackScores[] : DEMO_SCORES).map(({track, scores}) => ({
@@ -100,10 +103,9 @@ export const BubblesBoard = ({
 
     const [latestScoreID, setLatestScoreID] = useState<number | null>(scores.find(t => t.scores.length)?.scores[0]?.id || null)
     const scoreID = useRef(-1)
-    if(scoreID.current ===-1){
-        scoreID.current = Number.parseInt(localStorage.getItem('lastID') ?? '11')
+    if (scoreID.current === -1) {
+        scoreID.current = Number.parseInt(localStorage.getItem('lastID') ?? '30')
     }
-
 
     useEffect(() => {
         const myTicket = ++handlerTicket.current
@@ -277,7 +279,7 @@ export const BubblesBoard = ({
             background: '#08c linear-gradient(#33bbff, #08c, #004466)',
             justifyContent: 'center',
             position: 'relative',
-            overflow: 'hidden', //TODO: how this is causing issues?
+            overflow: 'clip',
             transition: 'width 0.5s, height 0.5s', ...style
         }} {...rest}>
             <video autoPlay playsInline style={{
@@ -292,7 +294,7 @@ export const BubblesBoard = ({
                    ref={videoElement}/>
             <div style={{width: `calc(100% - ${maxBubbleSize}px)`, height: '100%', position: 'absolute', top: '0'}}>
                 {bubbles.map((b) => <FloatingBubble key={b.value} style={{left: b.auxiliary * 100 + '%'}}
-                                                    className={b.popped ? 'popped' : ''} size={b.size + 'px'}
+                                                    size={b.size + 'px'}
                                                     duration={b.duration}
                                                     refFix={b.reference}>
                         {b.value}
@@ -300,6 +302,7 @@ export const BubblesBoard = ({
                 )}
 
             </div>
+            <audio ref={popSoundRef} src="/pop.mp3" preload="auto" className={'hidden'}></audio>
             <div ref={trailContainer as RefObject<HTMLDivElement>}
                  style={{width: '100%', height: '100%', position: 'absolute', top: '0'}}>
             </div>
@@ -352,7 +355,7 @@ export const BubblesBoard = ({
                                  })))
                                  setPendingScore(null)
                                  setLatestScoreID(scoreID.current++)
-                                 sessionStorage.setItem("lastID",scoreID.current.toString())
+                                 localStorage.setItem("lastID", scoreID.current.toString())
                              }}
                              clearLeaderBoard={() => setScores(EMPTY_SCORES)}
                              latestScoreID={latestScoreID}></LeaderBoard>
