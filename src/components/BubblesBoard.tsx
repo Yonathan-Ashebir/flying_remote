@@ -93,7 +93,7 @@ export const BubblesBoard = ({
         const oldScores = localStorage.getItem('scores')
         return (oldScores ? JSON.parse(oldScores) as TrackScores[] : DEMO_SCORES).map(({track, scores}) => ({
             track,
-            scores: scores.sort((a, b) => b.score - a.score)
+            scores: [...scores.sort((a, b) => b.score - a.score)]
         }))
     });
 
@@ -351,13 +351,13 @@ export const BubblesBoard = ({
                                  }
                                  setScores(newScores.map(({track, scores}) => ({
                                      track,
-                                     scores: scores.sort((a, b) => b.score - a.score)
+                                     scores: [...scores.sort((a, b) => b.score - a.score)]
                                  })))
                                  setPendingScore(null)
                                  setLatestScoreID(scoreID.current++)
                                  localStorage.setItem("lastID", scoreID.current.toString())
                              }}
-                             clearLeaderBoard={() => setScores(EMPTY_SCORES)}
+                             clearLeaderBoard={() => false && setScores(EMPTY_SCORES)}
                              latestScoreID={latestScoreID}></LeaderBoard>
                 <div className="mt-4" style={{backgroundColor: 'transparent'}}>
                     {(gameContext.status === Statuses.PAUSED &&
