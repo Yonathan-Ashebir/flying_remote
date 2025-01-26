@@ -317,6 +317,7 @@ export const BubblesBoard = ({
             }} alignItems={'center'} justifyContent={'center'}>
                 <LeaderBoard scores={scores} pendingScore={pendingScore}
                              clearPendingAndAddScore={(name, score, track) => {
+                                 return;
                                  const currentTrackScores = scores.find(scores => scores.track === track)!
                                  const currentTrackIndex = scores.findIndex(t => t.track === track)
                                  const newScores = {...scores}
