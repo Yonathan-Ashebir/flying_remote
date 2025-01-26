@@ -106,7 +106,7 @@ const SolveForX = () => {
                                     if (reference && !reference.classList.contains('popped')) {
                                         const eqIndex = myEquations.findIndex(eq => !eq.suspended && eq.answer === e!.value)
                                         if (eqIndex >= 0) {
-                                            myEquations = myEquations.splice(eqIndex, 1)
+                                            myEquations = [...myEquations.splice(eqIndex, 1)]
                                             myScore += getBonus(eqIndex, difficulty)
                                         } else {
                                             if (myEquations.length) {
