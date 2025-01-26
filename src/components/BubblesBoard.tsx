@@ -1,5 +1,5 @@
 import {TextBubble} from "./TextBubble";
-import {CSSProperties, RefObject, useContext, useEffect, useRef, useState} from "react";
+import {CSSProperties, RefObject, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {
     DEFAULT_BOARD_DIMENS,
     MAX_BOARD_HEIGHT_RATIO,
@@ -29,8 +29,8 @@ interface Props {
     style: CSSProperties;
     unpause: () => void;
     play: () => void;
-    pendingScore:{score:number, track: TrackScores['track']} | null;
-    setPendingScore: (pending: {score:number, track: TrackScores['track']} | null) => void;
+    pendingScore: { score: number, track: TrackScores['track'] } | null;
+    setPendingScore: (pending: { score: number, track: TrackScores['track'] } | null) => void;
 }
 
 const PenActions = {
@@ -40,20 +40,26 @@ const PenActions = {
 } as const;
 type PenAction = typeof PenActions[keyof typeof PenActions];
 
-const INITIAL_SCORES: TrackScores[] = [{
+const DEMO_SCORES: TrackScores[] = [{
     track: 'easy',
     scores: [
-        { "id": 1, "name": "Ahmed", "score": 120 },
-        { "id": 2, "name": "Fatima", "score": 250 },
-        { "id": 3, "name": "Omar", "score": 85 },
-        { "id": 4, "name": "Aisha", "score": 175 },
-        { "id": 5, "name": "Ali", "score": 210 },
-        { "id": 6, "name": "Zainab", "score": 95 },
-        { "id": 7, "name": "Hassan", "score": 160 },
-        { "id": 8, "name": "Khadija", "score": 130 },
-        { "id": 9, "name": "Ibrahim", "score": 230 },
-        { "id": 10, "name": "Mariam", "score": 180 }
+        {"id": 1, "name": "Ahmed", "score": 120},
+        {"id": 2, "name": "Fatima", "score": 250},
+        {"id": 3, "name": "Omar", "score": 85},
+        {"id": 4, "name": "Aisha", "score": 175},
+        {"id": 5, "name": "Ali", "score": 210},
+        {"id": 6, "name": "Zainab", "score": 95},
+        {"id": 7, "name": "Hassan", "score": 160},
+        {"id": 8, "name": "Khadija", "score": 130},
+        {"id": 9, "name": "Ibrahim", "score": 230},
+        {"id": 10, "name": "Mariam", "score": 180}
     ]
+
+}, {track: 'medium', scores: []}, {track: 'hard', scores: []}]
+
+const EMPTY_SCORES: TrackScores[] = [{
+    track: 'easy',
+    scores: []
 
 }, {track: 'medium', scores: []}, {track: 'hard', scores: []}]
 
@@ -79,11 +85,25 @@ export const BubblesBoard = ({
     const useHand = controlState === ControlStates.HAND
     const [boardDimensions, setBoardDimensions] = useState(DEFAULT_BOARD_DIMENS);
     const [videoDimensions, setVideoDimensions] = useState(DEFAULT_BOARD_DIMENS);
-    const handlerTicket = useRef(0)
-    const [scores, setScores] = useState<TrackScores[]>(INITIAL_SCORES);
+    const handlerTicket = useRef(Math.random())
+    const [scores, setScores] = useState<TrackScores[]>(() => {
+        const oldScores = localStorage.getItem('scores')
+        return (oldScores ? JSON.parse(oldScores) as TrackScores[] : DEMO_SCORES).map(({track, scores}) => ({
+            track,
+            scores: scores.sort((a, b) => b.score - a.score)
+        }))
+    });
+
+    useEffect(() => {
+        localStorage.setItem('scores', JSON.stringify(scores))
+    }, [scores]);
 
     const [latestScoreID, setLatestScoreID] = useState<number | null>(scores.find(t => t.scores.length)?.scores[0]?.id || null)
-    const scoreID = useRef(0)
+    const scoreID = useRef(-1)
+    if(scoreID.current ===-1){
+        scoreID.current = Number.parseInt(localStorage.getItem('lastID') ?? '11')
+    }
+
 
     useEffect(() => {
         const myTicket = ++handlerTicket.current
@@ -257,15 +277,17 @@ export const BubblesBoard = ({
             background: '#08c linear-gradient(#33bbff, #08c, #004466)',
             justifyContent: 'center',
             position: 'relative',
-            overflow: 'hidden',
+            overflow: 'hidden', //TODO: how this is causing issues?
             transition: 'width 0.5s, height 0.5s', ...style
         }} {...rest}>
             <video autoPlay playsInline style={{
-                ...videoDimensions,
+                ...videoDimensions, //TODO: why height is causing issues
                 transition: 'width 0.5s, height 0.5s',
                 opacity: useHand ? 0.5 : 0,
                 filter: 'blur(10px)',
-                transform: 'scaleX(-1)'
+                transform: 'scaleX(-1)',
+                maxWidth: 'unset',
+                maxHeight: 'unset',
             }}
                    ref={videoElement}/>
             <div style={{width: `calc(100% - ${maxBubbleSize}px)`, height: '100%', position: 'absolute', top: '0'}}>
@@ -319,16 +341,21 @@ export const BubblesBoard = ({
                              clearPendingAndAddScore={(name, score, track) => {
                                  const currentTrackScores = scores.find(scores => scores.track === track)!
                                  const currentTrackIndex = scores.findIndex(t => t.track === track)
-                                 const newScores = {...scores}
+                                 const newScores = [...scores]
                                  newScores[currentTrackIndex] = {
                                      ...currentTrackScores,
                                      scores: [...(currentTrackScores.scores), {id: scoreID.current, name, score}]
                                  }
-                                 setScores(newScores)
+                                 setScores(newScores.map(({track, scores}) => ({
+                                     track,
+                                     scores: scores.sort((a, b) => b.score - a.score)
+                                 })))
                                  setPendingScore(null)
                                  setLatestScoreID(scoreID.current++)
+                                 sessionStorage.setItem("lastID",scoreID.current.toString())
                              }}
-                             clearLeaderBoard={() => setScores(INITIAL_SCORES)} latestScoreID={latestScoreID}></LeaderBoard>
+                             clearLeaderBoard={() => setScores(EMPTY_SCORES)}
+                             latestScoreID={latestScoreID}></LeaderBoard>
                 <Card className="mt-4">
                     {(gameContext.status === Statuses.PAUSED &&
                         <Button onClick={unpause}><PlayArrow color={'primary'}
