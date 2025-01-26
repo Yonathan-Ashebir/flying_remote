@@ -4,6 +4,7 @@ export const DifficultyLevels = {
     EASY: 0, MEDIUM: 1, HARD: 2
 } as const
 export type DifficultyLevel = typeof DifficultyLevels[keyof typeof DifficultyLevels];
+export const getDifficultyLabel= (difficulty: DifficultyLevel)=> difficulty === DifficultyLevels.EASY? 'easy': difficulty === DifficultyLevels.MEDIUM? 'medium': 'hard';
 
 export const Statuses = {
     PLAYING: 0, PAUSED: 1, STOPPED: 2

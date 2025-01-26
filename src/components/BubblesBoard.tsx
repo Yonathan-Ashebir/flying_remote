@@ -1,5 +1,5 @@
 import {TextBubble} from "./TextBubble";
-import {CSSProperties, RefObject, useContext, useEffect, useMemo, useRef, useState} from "react";
+import {CSSProperties, RefObject, useContext, useEffect, useRef, useState} from "react";
 import {
     DEFAULT_BOARD_DIMENS,
     MAX_BOARD_HEIGHT_RATIO,
@@ -19,6 +19,7 @@ import {PlayArrow, PlayCircleFilled, ReplayCircleFilled} from "@mui/icons-materi
 import {selectBestScale} from "../utilites";
 import {Bubble, ControlState, ControlStates, Statuses} from "../types";
 import {HandLandmarker} from "@mediapipe/tasks-vision";
+import LeaderBoard, {TrackScores} from "./LeaderBoard.tsx";
 
 interface Props {
     bubbles: Bubble[];
@@ -28,6 +29,8 @@ interface Props {
     style: CSSProperties;
     unpause: () => void;
     play: () => void;
+    pendingScore:{score:number, track: TrackScores['track']} | null;
+    setPendingScore: (pending: {score:number, track: TrackScores['track']} | null) => void;
 }
 
 const PenActions = {
@@ -37,6 +40,23 @@ const PenActions = {
 } as const;
 type PenAction = typeof PenActions[keyof typeof PenActions];
 
+const INITIAL_SCORES: TrackScores[] = [{
+    track: 'easy',
+    scores: [
+        { "id": 1, "name": "Ahmed", "score": 120 },
+        { "id": 2, "name": "Fatima", "score": 250 },
+        { "id": 3, "name": "Omar", "score": 85 },
+        { "id": 4, "name": "Aisha", "score": 175 },
+        { "id": 5, "name": "Ali", "score": 210 },
+        { "id": 6, "name": "Zainab", "score": 95 },
+        { "id": 7, "name": "Hassan", "score": 160 },
+        { "id": 8, "name": "Khadija", "score": 130 },
+        { "id": 9, "name": "Ibrahim", "score": 230 },
+        { "id": 10, "name": "Mariam", "score": 180 }
+    ]
+
+}, {track: 'medium', scores: []}, {track: 'hard', scores: []}]
+
 export const BubblesBoard = ({
                                  bubbles,
                                  popBubble,
@@ -45,6 +65,8 @@ export const BubblesBoard = ({
                                  style,
                                  unpause,
                                  play,
+                                 pendingScore,
+                                 setPendingScore,
                                  ...rest
                              }: Props) => {
     const bubblesRef = useRef(bubbles)
@@ -54,10 +76,14 @@ export const BubblesBoard = ({
     const videoElement = useRef<HTMLVideoElement>(null)
     const pen2 = useRef<HTMLElement>(null)
     const gameContext = useContext(GameContext)
-    const useHand = useMemo(() => controlState === ControlStates.HAND, [controlState]);
+    const useHand = controlState === ControlStates.HAND
     const [boardDimensions, setBoardDimensions] = useState(DEFAULT_BOARD_DIMENS);
     const [videoDimensions, setVideoDimensions] = useState(DEFAULT_BOARD_DIMENS);
     const handlerTicket = useRef(0)
+    const [scores, setScores] = useState<TrackScores[]>(INITIAL_SCORES);
+
+    const [latestScoreID, setLatestScoreID] = useState<number | null>(scores.find(t => t.scores.length)?.scores[0]?.id || null)
+    const scoreID = useRef(0)
 
     useEffect(() => {
         const myTicket = ++handlerTicket.current
@@ -127,11 +153,12 @@ export const BubblesBoard = ({
                 })
                 return {width: adjustedWidth, height: adjustedHeight, initialVideoWidth, initialVideoHeight, scale}
             }
-            const measurements = {current: measure()}
+            const measurements: { current: ReturnType<typeof measure> | null } = {current: null}
             const onResize = () => {
                 measurements.current = measure()
             }
             videoElement.current!.onloadedmetadata = () => {
+                measurements.current = measure()
                 window.addEventListener('resize', onResize)
                 const trackHand = (data: { lastVideoTime: HTMLVideoElement['currentTime'], penDown?: boolean }) => {
                     const {lastVideoTime, penDown = false} = data
@@ -144,18 +171,18 @@ export const BubblesBoard = ({
                     const results = handMarker!.detectForVideo(videoElement.current!, startTimeMs);
                     if (!results.landmarks.length) {
                         data.penDown = false
-                        if (penDown) dispatch({type: 'pen-up'}, measurements.current)
+                        if (penDown) dispatch({type: 'pen-up'}, measurements.current!)
                         return
                     }
                     const middleFinger = results.landmarks[0][8]
-                    const x = (measurements.current.initialVideoWidth - middleFinger.x * measurements.current.initialVideoWidth) * measurements.current.scale
-                    const y = middleFinger.y * measurements.current.initialVideoHeight * measurements.current.scale
-                    if (!penDown) dispatch({type: 'pen-down', x, y}, measurements.current)
+                    const x = (measurements.current!.initialVideoWidth - middleFinger.x * measurements.current!.initialVideoWidth) * measurements.current!.scale
+                    const y = middleFinger.y * measurements.current!.initialVideoHeight * measurements.current!.scale
+                    if (!penDown) dispatch({type: 'pen-down', x, y}, measurements.current!)
                     data.penDown = true
                     dispatch({
                         type: PenActions.PEN_MOVE,
                         x, y
-                    }, measurements.current)
+                    }, measurements.current!)
                 }
                 trackHand({lastVideoTime: -1})
             }
@@ -288,7 +315,21 @@ export const BubblesBoard = ({
                 top: 0,
                 left: 0
             }} alignItems={'center'} justifyContent={'center'}>
-                <Card>
+                <LeaderBoard scores={scores} pendingScore={pendingScore}
+                             clearPendingAndAddScore={(name, score, track) => {
+                                 const currentTrackScores = scores.find(scores => scores.track === track)!
+                                 const currentTrackIndex = scores.findIndex(t => t.track === track)
+                                 const newScores = {...scores}
+                                 newScores[currentTrackIndex] = {
+                                     ...currentTrackScores,
+                                     scores: [...(currentTrackScores.scores), {id: scoreID.current, name, score}]
+                                 }
+                                 setScores(newScores)
+                                 setPendingScore(null)
+                                 setLatestScoreID(scoreID.current++)
+                             }}
+                             clearLeaderBoard={() => setScores(INITIAL_SCORES)} latestScoreID={latestScoreID}></LeaderBoard>
+                <Card className="mt-4">
                     {(gameContext.status === Statuses.PAUSED &&
                         <Button onClick={unpause}><PlayArrow color={'primary'}
                                                              fontSize={'large'}/></Button>) ||
@@ -302,7 +343,8 @@ export const BubblesBoard = ({
                 </Card>
             </Stack>
         </div>
-    );
+    )
+        ;
 }
 
 const floatUp = keyframes`

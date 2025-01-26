@@ -26,11 +26,12 @@ import {
     DifficultyLevels,
     Equation,
     EventType,
-    EventTypes,
+    EventTypes, getDifficultyLabel,
     Status,
     Statuses
 } from "./types";
 import {HandLandmarker} from "@mediapipe/tasks-vision";
+import {TrackScores} from "./components/LeaderBoard.tsx";
 
 
 const SolveForX = () => {
@@ -48,7 +49,11 @@ const SolveForX = () => {
         , [])
     const [gameStartTime, setGameStartTime] = useState(-1);
     const [gameEndTime, setGameEndTime] = useState(-1);
-    const handTrackerRef = useRef<{locked: boolean, handMarker?: HandLandmarker, videoStream?: MediaStream}>({locked: false});
+    const handTrackerRef = useRef<{
+        locked: boolean,
+        handMarker?: HandLandmarker,
+        videoStream?: MediaStream
+    }>({locked: false});
     const [controlState, setControlState] = useState<ControlState>(ControlStates.MOUSE)
     const gameContext = useMemo(() => ({
         difficulty,
@@ -56,6 +61,7 @@ const SolveForX = () => {
         gameStartTime,
         gameEndTime
     }), [difficulty, status, gameStartTime, gameEndTime])
+    const [pendingScore, setPendingScore] = useState<{ score: number, track: TrackScores['track'] } | null>(null);
 
     /* game play controls */
     const play = useCallback(() => setSession(session + 1), [session])
@@ -94,7 +100,7 @@ const SolveForX = () => {
                         while ((e = events.current.pop())) {
                             switch (e.type) {
                                 case EventTypes.POP: {
-                                    const reference = myBubbles.find(b => b.value === e!.value)!.reference!.current
+                                    const reference = myBubbles.find(b => b.value === e!.value)?.reference?.current
                                     if (reference && !reference.classList.contains('popped')) {
                                         const eqIndex = myEquations.findIndex(eq => !eq.suspended && eq.answer === e!.value)
                                         if (eqIndex >= 0) {
@@ -135,7 +141,10 @@ const SolveForX = () => {
                             }
                         }
 
-                        if (now > myGameEndTime) break
+                        if (now > myGameEndTime) {
+                            setPendingScore({score: myScore, track: getDifficultyLabel(difficulty)})
+                            break
+                        }
 
                         if (now > nextBubbleTime) {
                             const numberBounds = getNumberBounds(difficulty)
@@ -198,6 +207,7 @@ const SolveForX = () => {
                         // console.log("Equations: ", myEquations.filter(eq => !eq.suspended).map(eq => eq.answer), 'suspended: ', myEquations.reduce((total, eq) => eq.suspended ? total + 1 : total, 0), 'score:', myScore)
                         await wait(10)
                     }
+                    setScore(myScore)
                     setEquations([])
                     setStatus(Statuses.STOPPED);
                 })()
@@ -210,7 +220,8 @@ const SolveForX = () => {
                 <BubblesBoard bubbles={bubbles}
                               popBubble={popBubble} style={{}} play={play} unpause={unpause}
                               controlState={controlState}
-                              handTrackerRef={handTrackerRef}/>
+                              handTrackerRef={handTrackerRef} pendingScore={pendingScore}
+                              setPendingScore={setPendingScore}/>
                 <EquationsBar score={score} equations={equations} stop={stop} pause={pause}
                               setDifficulty={setDifficulty}
                               controlState={controlState} setControlState={setControlState}
