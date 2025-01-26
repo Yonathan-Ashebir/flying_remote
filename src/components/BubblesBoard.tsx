@@ -342,7 +342,6 @@ export const BubblesBoard = ({
             }} alignItems={'center'} justifyContent={'center'}>
                 <LeaderBoard scores={scores} pendingScore={pendingScore}
                              clearPendingAndAddScore={(name, score, track) => {
-                                 return;
                                  const currentTrackScores = scores.find(scores => scores.track === track)!
                                  const currentTrackIndex = scores.findIndex(t => t.track === track)
                                  const newScores = [...scores]
@@ -358,7 +357,7 @@ export const BubblesBoard = ({
                                  setLatestScoreID(scoreID.current++)
                                  localStorage.setItem("lastID", scoreID.current.toString())
                              }}
-                             clearLeaderBoard={() => setScores(EMPTY_SCORES)}
+                             clearLeaderBoard={() => false && setScores(EMPTY_SCORES)}
                              latestScoreID={latestScoreID}></LeaderBoard>
                 <div className="mt-4" style={{backgroundColor: 'transparent'}}>
                     {(gameContext.status === Statuses.PAUSED &&
