@@ -3,13 +3,15 @@ import {useEffect, useRef, useState} from "react";
 import {CSSFadeTransition} from "./components/transitions/CSSFadeTransition";
 import {Button, Stack} from "@mui/material";
 
+
+// eslint-disable @typescript-eslint/no-unused-vars
 const TestTransition = () => {
     const [inProp, setInProp] = useState(false);
     const nodeRef = useRef(null);
     return (
         <div>
             <Transition mountOnEnter={true} nodeRef={nodeRef} in={inProp} timeout={500}>
-                {(state: any) => <p ref={nodeRef}>{state}</p>}
+                {(state: string) => <p ref={nodeRef}>{state}</p>}
             </Transition>
             <button onClick={() => setInProp(!inProp)}>
                 Click to Enter
@@ -31,11 +33,10 @@ const TestFadeSwitch = () => {
 }
 
 const TestWebcamToVideo = () => {
-    const ref = useRef(null);
+    const ref = useRef<HTMLVideoElement>(null);
     useEffect(() => {
         setTimeout(async () => {
-            ref.current.srcObject = await navigator.mediaDevices.getUserMedia({video: true})
-
+            ref.current!.srcObject = await navigator.mediaDevices.getUserMedia({video: true})
         }, 50)
     }, [true]);
     return <video ref={ref}></video>

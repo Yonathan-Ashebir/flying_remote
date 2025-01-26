@@ -1,57 +1,87 @@
 import {TextBubble} from "./TextBubble";
-import {useContext, useEffect, useMemo, useRef, useState} from "react";
+import {CSSProperties, RefObject, useContext, useEffect, useMemo, useRef, useState} from "react";
 import {
-    ControlState, DEFAULT_BOARD_DIMENS, TRIM_RATIO, MAX_BOARD_HEIGHT_RATIO,
+    DEFAULT_BOARD_DIMENS,
+    MAX_BOARD_HEIGHT_RATIO,
     MAX_BOARD_WIDTH_RATIO,
     maxBubbleSize,
     MIN_BOARD_HEIGHT,
     MIN_BOARD_WIDTH,
-    Status
+    TRIM_RATIO
 } from "../data/contants";
 import './trail.css'
 import styled from "@emotion/styled";
 import {keyframes} from "@emotion/react";
 import {TimeBar} from "./TimeBar";
 import {GameContext} from "../data/GameContext";
-import {Button, Card, IconButton, Stack} from "@mui/material";
+import {Button, Card, Stack} from "@mui/material";
 import {PlayArrow, PlayCircleFilled, ReplayCircleFilled} from "@mui/icons-material";
 import {selectBestScale} from "../utilites";
+import {Bubble, ControlState, ControlStates, Statuses} from "../types";
+import {HandLandmarker} from "@mediapipe/tasks-vision";
 
+interface Props {
+    bubbles: Bubble[];
+    popBubble: (bubble: Bubble) => void;
+    controlState: ControlState;
+    handTrackerRef: RefObject<{ handMarker?: HandLandmarker, videoSource?: MediaStream }>; //TODO
+    style: CSSProperties;
+    unpause: () => void;
+    play: () => void;
+}
 
-export const BubblesBoard = (props: any) => {
-    const {bubbles, popBubble, controlState, handTrackerRef} = props
+const PenActions = {
+    PEN_DOWN: "pen-down",
+    PEN_UP: "pen-up",
+    PEN_MOVE: "pen-move",
+} as const;
+type PenAction = typeof PenActions[keyof typeof PenActions];
+
+export const BubblesBoard = ({
+                                 bubbles,
+                                 popBubble,
+                                 controlState,
+                                 handTrackerRef,
+                                 style,
+                                 unpause,
+                                 play,
+                                 ...rest
+                             }: Props) => {
     const bubblesRef = useRef(bubbles)
     bubblesRef.current = bubbles
-    const trailContainer = useRef()
-    const pen = useRef()
-    const videoElement = useRef()
-    const pen2 = useRef()
+    const trailContainer = useRef<HTMLElement>(null)
+    const pen = useRef<HTMLElement>(null)
+    const videoElement = useRef<HTMLVideoElement>(null)
+    const pen2 = useRef<HTMLElement>(null)
     const gameContext = useContext(GameContext)
-    const useHand = useMemo(() => controlState === ControlState.HAND, [controlState]);
+    const useHand = useMemo(() => controlState === ControlStates.HAND, [controlState]);
     const [boardDimensions, setBoardDimensions] = useState(DEFAULT_BOARD_DIMENS);
     const [videoDimensions, setVideoDimensions] = useState(DEFAULT_BOARD_DIMENS);
     const handlerTicket = useRef(0)
 
     useEffect(() => {
         const myTicket = ++handlerTicket.current
-        const data = {trail: []}
+        const data: { trail: HTMLElement[] } = {trail: []}
         const maximumHistorySize = 50;
-        const trailer = trailContainer.current
-        const dispatch = (action: any, boardDimension: any) => {
-            const {x, y, type} = action
+        const trailer = trailContainer.current!
+        const dispatch = ({x, y, type}: { x?: number, y?: number, type: PenAction }, boardDimension?: {
+            width: number,
+            height: number
+        }) => {
             switch (type) {
-                case 'pen-down':
-                    pen.current.classList.add('down')
-                // no break
-                case 'pen-move':
+                // tslint:disable-next-line:no-switch-case-fall-through
+                case PenActions.PEN_DOWN:
+                    pen.current!.classList.add('down')
+                // tslint:disable-next-line:no-switch-case-fall-through
+                case PenActions.PEN_MOVE: {
                     const now = Date.now();
                     for (const bubble of bubblesRef.current) {
-                        const cx = bubble.auxiliary * (boardDimension.width - maxBubbleSize) + bubble.size / 2
-                        const cy = boardDimension.height - (now - bubble.createTime) * (boardDimension.height + maxBubbleSize * 1.5) / bubble.duration + bubble.size / 2
-                        if ((cx - x) ** 2 + (cy - y) ** 2 < bubble.size ** 2 / 2) popBubble(bubble)
+                        const cx = bubble.auxiliary * (boardDimension!.width - maxBubbleSize) + bubble.size / 2
+                        const cy = boardDimension!.height - (now - bubble.createTime) * (boardDimension!.height + maxBubbleSize * 1.5) / bubble.duration + bubble.size / 2
+                        if ((cx - x!) ** 2 + (cy - y!) ** 2 < bubble.size ** 2 / 2) popBubble(bubble)
                     }
-                    pen.current.style.top = `${y}px`
-                    pen.current.style.left = `${x}px`
+                    pen.current!.style.top = `${y}px`
+                    pen.current!.style.left = `${x}px`
                     const trailSpot = document.createElement('div')
                     trailSpot.className = 'trail-spot'
                     trailSpot.style.top = `${y}px`
@@ -60,20 +90,21 @@ export const BubblesBoard = (props: any) => {
                     trailer.appendChild(trailSpot)
 
                     if (data.trail.length > maximumHistorySize)
-                        trailer.removeChild(data.trail.shift())
+                        trailer.removeChild(data.trail.shift()!)
                     break;
+                }
                 case 'pen-up':
-                    pen.current.classList.remove('down')
+                    pen.current!.classList.remove('down')
                     break;
                 default:
-                    console.warn('unknown message type: ' + action.data)
+                    console.warn('unknown message type: ' + type)
             }
         }
         if (useHand) {
-            const {handMarker, videoSource} = handTrackerRef.current
+            const {handMarker, videoSource} = handTrackerRef.current!
 
             const measure = () => {
-                const {videoHeight: initialVideoHeight, videoWidth: initialVideoWidth} = videoElement.current
+                const {videoHeight: initialVideoHeight, videoWidth: initialVideoWidth} = videoElement.current!
                 const trim = TRIM_RATIO * Math.min(initialVideoWidth, initialVideoHeight)
                 const videoWidth = initialVideoWidth - trim
                 const videoHeight = initialVideoHeight - trim
@@ -94,21 +125,23 @@ export const BubblesBoard = (props: any) => {
                     width: `${adjustedWidth}px`,
                     height: `${adjustedHeight}px`
                 })
-                return  {width: adjustedWidth, height: adjustedHeight, initialVideoWidth, initialVideoHeight, scale}
+                return {width: adjustedWidth, height: adjustedHeight, initialVideoWidth, initialVideoHeight, scale}
             }
             const measurements = {current: measure()}
-            const onResize = () => {measurements.current = measure()}
-            videoElement.current.onloadedmetadata = () => {
+            const onResize = () => {
+                measurements.current = measure()
+            }
+            videoElement.current!.onloadedmetadata = () => {
                 window.addEventListener('resize', onResize)
-                const trackHand = (data: any) => {
+                const trackHand = (data: { lastVideoTime: HTMLVideoElement['currentTime'], penDown?: boolean }) => {
                     const {lastVideoTime, penDown = false} = data
                     if (myTicket !== handlerTicket.current) return
                     const startTimeMs = performance.now();
-                    const currentTime = videoElement.current.currentTime
+                    const currentTime = videoElement.current!.currentTime
                     data.lastVideoTime = currentTime
                     requestAnimationFrame(() => trackHand(data))
                     if (lastVideoTime === currentTime) return;
-                    let results = handMarker.detectForVideo(videoElement.current, startTimeMs);
+                    const results = handMarker!.detectForVideo(videoElement.current!, startTimeMs);
                     if (!results.landmarks.length) {
                         data.penDown = false
                         if (penDown) dispatch({type: 'pen-up'}, measurements.current)
@@ -120,18 +153,18 @@ export const BubblesBoard = (props: any) => {
                     if (!penDown) dispatch({type: 'pen-down', x, y}, measurements.current)
                     data.penDown = true
                     dispatch({
-                        type: 'pen-move',
+                        type: PenActions.PEN_MOVE,
                         x, y
                     }, measurements.current)
                 }
                 trackHand({lastVideoTime: -1})
             }
-            videoElement.current.srcObject = videoSource
+            videoElement.current!.srcObject = videoSource!
             return () => {
                 for (const child of trailer.children) child.remove()
                 window.removeEventListener('resize', onResize)
-                dispatch({type: 'pen-up'})
-                videoSource.getTracks().forEach((t: any) => t.stop())
+                dispatch({type: PenActions.PEN_UP})
+                videoSource!.getTracks().forEach((t: MediaStreamTrack) => t.stop())
             };
         } else {
             setBoardDimensions(DEFAULT_BOARD_DIMENS)
@@ -150,7 +183,7 @@ export const BubblesBoard = (props: any) => {
                 width: window.innerWidth * MAX_BOARD_WIDTH_RATIO,
                 height: window.innerHeight * MAX_BOARD_HEIGHT_RATIO
             })
-            trailer.onmousemove = (ev: any) => {
+            trailer.onmousemove = (ev: MouseEvent) => {
                 if (bounds.updateBound && bounds.updateStopTime > Date.now()) {
                     bounds.current = trailer.getBoundingClientRect() //todo: can do better?
                     bounds.updateBound = bounds.updateStopTime > Date.now()
@@ -198,8 +231,8 @@ export const BubblesBoard = (props: any) => {
             justifyContent: 'center',
             position: 'relative',
             overflow: 'hidden',
-            transition: 'width 0.5s, height 0.5s', ...props.style
-        }}>
+            transition: 'width 0.5s, height 0.5s', ...style
+        }} {...rest}>
             <video autoPlay playsInline style={{
                 ...videoDimensions,
                 transition: 'width 0.5s, height 0.5s',
@@ -209,18 +242,19 @@ export const BubblesBoard = (props: any) => {
             }}
                    ref={videoElement}/>
             <div style={{width: `calc(100% - ${maxBubbleSize}px)`, height: '100%', position: 'absolute', top: '0'}}>
-                {bubbles.map((b: any) => <FloatingBubble key={b.value} style={{left: b.auxiliary * 100 + '%'}}
-                                className={b.popped ? 'popped' : ''} size={b.size + 'px'} duration={b.duration}
-                                refFix={b.reference}>
-                    {b.value}
-                </FloatingBubble>
+                {bubbles.map((b) => <FloatingBubble key={b.value} style={{left: b.auxiliary * 100 + '%'}}
+                                                    className={b.popped ? 'popped' : ''} size={b.size + 'px'}
+                                                    duration={b.duration}
+                                                    refFix={b.reference}>
+                        {b.value}
+                    </FloatingBubble>
                 )}
 
             </div>
-            <div ref={trailContainer}
+            <div ref={trailContainer as RefObject<HTMLDivElement>}
                  style={{width: '100%', height: '100%', position: 'absolute', top: '0'}}>
             </div>
-            <div className='pen' ref={pen} style={{
+            <div className='pen' ref={pen as RefObject<HTMLDivElement>} style={{
                 width: '10px',
                 height: '10px',
                 background: 'red',
@@ -229,7 +263,7 @@ export const BubblesBoard = (props: any) => {
                 borderRadius: '50%',
                 top: '0'
             }}></div>
-            <div className='pen' ref={pen2} style={{
+            <div className='pen' ref={pen2 as RefObject<HTMLDivElement>} style={{
                 width: '10px',
                 height: '10px',
                 background: 'green',
@@ -241,34 +275,32 @@ export const BubblesBoard = (props: any) => {
                 display: "none"
             }}></div>
             <TimeBar style={{position: 'absolute', top: '50px', left: '50%', transform: 'translateX(-50%)'}}/>
-            {gameContext.status !== Status.PLAYING && <Stack justifyContent={'center'} alignItems={'center'}>
-                <Stack style={{
-                    visibility: gameContext.status === Status.PLAYING ? 'hidden' : 'visible',
-                    opacity: gameContext.status === Status.PLAYING ? 0 : 1,
-                    transition: 'opacity 0.5s',
-                    background: '#00000055',
-                    backdropFilter: 'blur(10px)',
-                    width: '100%',
-                    height: '100%',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0
-                }} alignItems={'center'} justifyContent={'center'}>
-                    <Card>
-                        {(gameContext.status === Status.PAUSED &&
-                                <Button onClick={props.unpause}><PlayArrow color={'primary'}
-                                                                           fontSize={'large'}/></Button>) ||
-                            (gameContext.gameStartTime === -1 ?
-                                    <Button onClick={props.play}><PlayCircleFilled
-                                        fontSize={'large'} color={'primary'}/>&nbsp;Start</Button> :
-                                    <Button onClick={props.play}><ReplayCircleFilled
-                                        fontSize={'large'} color={'primary'}/>&nbsp;Restart</Button>
-                            )
-                        }
-                    </Card>
 
-                </Stack>
-            </Stack>}
+            <Stack style={{
+                visibility: gameContext.status === Statuses.PLAYING ? 'hidden' : 'visible',
+                opacity: gameContext.status === Statuses.PLAYING ? 0 : 1,
+                transition: 'opacity 0.5s',
+                background: '#00000055',
+                backdropFilter: 'blur(10px)',
+                width: '100%',
+                height: '100%',
+                position: 'absolute',
+                top: 0,
+                left: 0
+            }} alignItems={'center'} justifyContent={'center'}>
+                <Card>
+                    {(gameContext.status === Statuses.PAUSED &&
+                        <Button onClick={unpause}><PlayArrow color={'primary'}
+                                                             fontSize={'large'}/></Button>) ||
+                        (gameContext.gameStartTime === -1 ?
+                                <Button onClick={play}><PlayCircleFilled
+                                    fontSize={'large'} color={'primary'}/>&nbsp;Start</Button> :
+                                <Button onClick={play}><ReplayCircleFilled
+                                    fontSize={'large'} color={'primary'}/>&nbsp;Restart</Button>
+                        )
+                    }
+                </Card>
+            </Stack>
         </div>
     );
 }
@@ -287,5 +319,5 @@ const floatUp = keyframes`
 
 const FloatingBubble = styled(TextBubble)`
     position: absolute;
-    animation: ${floatUp} linear ${(props: any) => props.duration}ms forwards;
+    animation: ${floatUp} linear ${(props) => props.duration}ms forwards;
 `

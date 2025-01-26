@@ -1,9 +1,15 @@
 import {createContext} from "react";
-import {Difficulty, Status} from "./contants";
 
-export const GameContext = createContext({
-    difficulty: Difficulty.EASY,
-    status: Status.STOPPED,
+import {DifficultyLevel, DifficultyLevels, Status, Statuses} from "../types";
+
+export const GameContext = createContext<{
+    difficulty: DifficultyLevel,
+    status: Status,
+    gameStartTime: number,
+    gameEndTime: number
+}>({
+    difficulty: DifficultyLevels.EASY,
+    status: Statuses.STOPPED,
     gameStartTime: -1,
     gameEndTime: -1
 });
